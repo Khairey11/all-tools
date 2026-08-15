@@ -60,8 +60,8 @@ export function gifDecoderSupported(): boolean {
 /* Decoding                                                            */
 /* ------------------------------------------------------------------ */
 
-const MAX_DECODE_FRAMES = 800;
-const MEMORY_BUDGET_BYTES = 500_000_000;
+const MAX_DECODE_FRAMES = 100000;
+const MEMORY_BUDGET_BYTES = 3_500_000_000;
 const MIN_DELAY_MS = 100; // browsers promote tiny frame delays to 100ms
 
 function normalizeDelay(ms: number): number {
@@ -453,12 +453,23 @@ function clampScale(s: number): number {
     return Math.min(1, Math.max(FLOOR_SCALE, s));
 }
 
-export async function compressGifToSize(
+
+export type GifStrength = 'light' | 'balanced' | 'strong' | 'extreme';
+
+/** Quality floors per strength - the target compressor never degrades below these. */
+const STRENGTH_BOUNDS: Record<GifStrength, { minColors: number; minScale: number; maxLossy: number }> = {
+    light: { minColors: 160, minScale: 0.9, maxLossy: 0 },
+    balanced: { minColors: 96, minScale: 0.5, maxLossy: 25 },
+    strong: { minColors: 48, minScale: 0.2, maxLossy: 80 },
+    extreme: { minColors: 16, minScale: FLOOR_SCALE, maxLossy: 160 },
+};export async function compressGifToSize(
     file: File,
     targetBytes: number,
-    callbacks?: { onProgress?: GifProgressFn; preDecoded?: DecodedGif }
+    callbacks?: { onProgress?: GifProgressFn; preDecoded?: DecodedGif; strength?: GifStrength }
 ): Promise<GifCompressResult> {
     const onProgress = callbacks?.onProgress;
+    const bounds = STRENGTH_BOUNDS[callbacks?.strength ?? 'balanced'];
+    const clampScaleB = (s: number): number => Math.min(1, Math.max(bounds.minScale, s));
 
     // Already fits â€” return untouched.
     if (file.size <= targetBytes) {
@@ -570,7 +581,7 @@ export async function compressGifToSize(
     /* ---- Phase 1: color ladder (frames untouched) ------------------- */
     // Color reduction down to ~96 colors is essentially invisible on
     // real-world content.
-    const colorLadder = [192, 160, 128, 96, 64];
+    const colorLadder = [192, 160, 128, 96, 64, 32].filter((cl) => cl >= bounds.minColors);
     for (let i = 0; i < colorLadder.length; i++) {
         const out = await runPass(
             { colors: colorLadder[i], interval: 1, scale: 1, lossy: 0 },
@@ -600,7 +611,7 @@ export async function compressGifToSize(
         const last = lastOutcome();
         const ratio = Math.max(0.004, targetBytes / last.bytes);
         const margin = last.bytes > targetBytes ? 0.9 : 1.08; // undershoot when too big
-        const scale = clampScale(last.cfg.scale * Math.sqrt(ratio) * margin);
+        const scale = clampScaleB(Math.max(bounds.minScale, clampScale(last.cfg.scale * Math.sqrt(ratio) * margin)));
         const cfg: PassConfig = {
             colors: Math.max(64, Math.min(128, last.cfg.colors)),
             interval: 1,
@@ -621,7 +632,7 @@ export async function compressGifToSize(
             const cfg: PassConfig = {
                 colors: Math.min(256, Math.max(fit.cfg.colors, 160)),
                 interval: 1,
-                scale: clampScale(fit.cfg.scale * 1.2),
+                scale: clampScaleB(fit.cfg.scale * 1.2),
                 lossy: 0,
             };
             if (cfg.scale <= fit.cfg.scale * 1.01 && cfg.colors === fit.cfg.colors) return;
@@ -649,8 +660,8 @@ export async function compressGifToSize(
     /* ---- Phase 4: last resort -------------------------------------- */
     // Extreme targets only: aggressive thinning + lossy rounding + scale.
     const floorSteps: PassConfig[] = [
-        { colors: 48, interval: 1, scale: clampScale((smallest()?.cfg.scale ?? 1) * 0.7), lossy: 30 },
-        { colors: 32, interval: 1, scale: FLOOR_SCALE, lossy: 60 },
+        { colors: Math.max(bounds.minColors, 48), interval: 1, scale: clampScaleB((smallest()?.cfg.scale ?? 1) * 0.7), lossy: Math.min(bounds.maxLossy, 30) },
+        { colors: bounds.minColors, interval: 1, scale: bounds.minScale, lossy: bounds.maxLossy },
     ];
     for (let i = 0; i < floorSteps.length; i++) {
         const out = await runPass(floorSteps[i], 88 + i * 3);

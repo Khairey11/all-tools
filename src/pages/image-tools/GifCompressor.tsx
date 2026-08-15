@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { useDropzone } from 'react-dropzone';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Film, UploadCloud, Download, RefreshCw, Sparkles, Target } from 'lucide-react';
+import { ArrowLeft, Film, UploadCloud, Download, RefreshCw, Sparkles, Target, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatFileSize, downloadFile } from '../../utils/format';
 import {
@@ -13,6 +13,7 @@ import {
  gifDecoderSupported,
  type GifCompressResult,
  type DecodedGif,
+ type GifStrength,
 } from '../../utils/gifEngine';
 
 type Mode = 'target' | 'manual';
@@ -21,7 +22,7 @@ interface GifJob {
  id: string;
  original: File;
  result: GifCompressResult | null;
- status: 'queued' | 'working' | 'done' | 'error';
+ status: 'ready' | 'queued' | 'working' | 'done' | 'error';
  progress: number;
  label: string;
  error?: string;
@@ -47,6 +48,7 @@ export const GifCompressor = () => {
  const [manualColors, setManualColors] = useState(192);
  const [manualScale, setManualScale] = useState(1); // 1 = original
  const [manualLossy, setManualLossy] = useState(60);
+ const [strength, setStrength] = useState<GifStrength>('balanced');
 
  const supportedRef = useRef<boolean>();
  if (supportedRef.current === undefined) {
@@ -80,7 +82,7 @@ export const GifCompressor = () => {
  id: Math.random().toString(36).slice(2) + Date.now().toString(36),
  original: f,
  result: null,
- status: 'queued',
+ status: 'ready',
  progress: 0,
  label: 'Waitingâ€¦',
  originalUrl: URL.createObjectURL(f),
@@ -205,7 +207,7 @@ export const GifCompressor = () => {
  inFlightRef.current.delete(jobId);
  }
  },
- [mode, targetBytes, manualColors, manualScale, manualLossy, patchJob]
+ [mode, targetBytes, manualColors, manualScale, manualLossy, strength, patchJob]
  );
 
  // Pick up queued jobs (uploads or Re-compress). The in-flight set
@@ -218,7 +220,24 @@ export const GifCompressor = () => {
  }
  }, [jobs, processJob]);
 
- const rerunAll = () => {
+ const compressAll = () => {
+  setJobs((prev) =>
+   prev.map((j) => {
+    if (j.status !== 'ready') return j;
+    if (j.resultUrl) URL.revokeObjectURL(j.resultUrl);
+    return {
+     ...j,
+     result: null,
+     resultUrl: null,
+     status: 'queued',
+     progress: 0,
+     label: 'Waiting...',
+     error: undefined,
+    };
+   })
+  );
+ };
+  const rerunAll = () => {
  setJobs((prev) =>
  prev.map((j) => {
  if (j.resultUrl) URL.revokeObjectURL(j.resultUrl);
@@ -226,7 +245,7 @@ export const GifCompressor = () => {
  ...j,
  result: null,
  resultUrl: null,
- status: 'queued',
+ status: 'ready',
  progress: 0,
  label: 'Waitingâ€¦',
  error: undefined,
@@ -261,7 +280,7 @@ export const GifCompressor = () => {
  ...j,
  result: null,
  resultUrl: null,
- status: 'queued',
+ status: 'ready',
  progress: 0,
  label: 'Re-compressingâ€¦',
  error: undefined,
@@ -369,6 +388,11 @@ export const GifCompressor = () => {
  <div className="flex-1" />
 
  <button
+  onClick={compressAll}
+  className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+ >
+  <Zap className="w-4 h-4" /> Compress
+ </button> <button
  onClick={rerunAll}
  className="px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-widest border border-secondary bg-white/80 text-text-muted hover:text-text transition-all flex items-center gap-2"
  >
@@ -411,7 +435,32 @@ export const GifCompressor = () => {
  {p.label}
  </button>
  ))}
- </div>
+
+ <div className="space-y-2">
+  <div className="flex items-center justify-between text-sm">
+   <span className="text-text-muted">Compression strength</span>
+   <span className="text-text font-mono text-xs bg-white/5 px-2 py-1 rounded capitalize">{strength}</span>
+  </div>
+  <div className="flex flex-wrap gap-2">
+   {(['light', 'balanced', 'strong', 'extreme'] as GifStrength[]).map((s) => (
+    <button
+     key={s}
+     onClick={() => setStrength(s)}
+     className={clsx(
+      'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all capitalize',
+      strength === s
+       ? 'bg-primary text-white border-primary'
+       : 'bg-white/80 text-text-muted border-secondary hover:text-text'
+     )}
+    >
+     {s}
+    </button>
+   ))}
+  </div>
+  <p className="text-xs text-text-muted">
+   Quality floor: {strength === 'light' ? 'at least 160 colors and 90% resolution' : strength === 'balanced' ? 'at least 96 colors and 50% resolution' : strength === 'strong' ? 'at least 48 colors and 20% resolution' : 'no floor - smallest possible'}. Every frame is always kept.
+  </p>
+ </div> </div>
  <input
  type="range"
  min={100 * 1024}
