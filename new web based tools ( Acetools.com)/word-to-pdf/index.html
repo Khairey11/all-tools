@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word to PDF — Convert DOCX to PDF Free | SwiftPDF</title>
+  <meta name="description" content="Convert Microsoft Word documents (.docx) to PDF instantly. Free, fast, and entirely browser-based." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- AdSense Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- Shared JS Components -->
+  <script src="/js/shared.js" defer></script>
+</head>
+<body>
+
+<swift-header></swift-header>
+
+<!-- TOOL HERO -->
+<section class="tool-hero">
+  <div class="tool-breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/#tools">Tools</a> &rsaquo; Word to PDF
+  </div>
+  <h1>📄 Word to PDF</h1>
+  <p>Convert Microsoft Word (.docx) documents to PDF cleanly and securely. Share your files without losing your formatting.</p>
+  
+  <div class="mockup-wrap">
+    <div class="mockdoc doc-word">DOCX</div>
+    <div class="mockup-arrow">→</div>
+    <div class="mockdoc doc-pdf">PDF</div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="tool-wrap">
+
+  
+  <!-- Ad Placement 1: Top Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-bottom:2rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_1"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- Drop Zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+    <span class="drop-icon">📥</span>
+    <h2>Drop your Word file here</h2>
+    <p>or click to browse from your device (.docx only)</p>
+    <span class="btn-choose">📂 Choose .docx</span>
+  </div>
+
+  
+  <!-- Ad Placement 2: Rectangle -->
+  <div class="ad-slot-rectangle" style="min-height:250px; text-align:center; margin: 2rem auto;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_2"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- File Strip -->
+  <div class="file-strip" id="file-strip">
+    <span class="fs-icon">📄</span>
+    <div class="fs-info">
+      <div class="fs-name" id="fs-name">filename.docx</div>
+      <div class="fs-meta" id="fs-meta">—</div>
+    </div>
+    <button class="btn-change" id="btn-change">↩ Change file</button>
+  </div>
+
+  <!-- Convert Action -->
+  <div class="convert-action" id="convert-action">
+    <button class="btn-convert" id="btn-convert">📄 Convert to PDF</button>
+    <span class="convert-hint">🔒 Conversion happens completely in your browser</span>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" id="loading-state">
+    <div class="spinner"></div>
+    <div class="loading-label" id="loading-label">Converting your document...</div>
+    <div class="loading-sub" id="loading-sub">Rendering formatting and layout</div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-state" id="results-state">
+    <div class="result-card">
+      <span class="result-icon">🎉</span>
+      <h3>Conversion Complete</h3>
+      <p>Your Word document has been successfully converted into a PDF.</p>
+      <a href="#" class="btn-download" id="btn-download" download="converted.pdf">⬇️ Download PDF</a>
+    </div>
+    <div class="results-reset">
+      <button class="btn-reset" id="btn-reset">🔄 Convert Another File</button>
+    </div>
+  </div>
+
+  <!-- Hidden Container for HTML Rendering -->
+  <div id="pdf-render-container"></div>
+
+  <!-- Info cards -->
+  <div class="info-section">
+    <div class="info-card">
+      <span class="ic-icon">📝</span>
+      <h4>Maintains Formatting</h4>
+      <p>Preserves headings, paragraphs, lists, and basic styles from your Word file.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">🔒</span>
+      <h4>100% Private</h4>
+      <p>Your document is never uploaded to any server. Complete browser-side conversion.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">⚡</span>
+      <h4>Instant Download</h4>
+      <p>Get your converted PDF instantly without any wait times or queues.</p>
+    </div>
+  </div>
+
+  <!-- Ad Placement 3: Bottom Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-top:3rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_3"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+</main>
+
+<swift-premium-modal></swift-premium-modal>
+</div>
+
+<swift-footer></swift-footer>
+
+<script>
+// ── Globals ────────────────────────────────────────────────────
+let currentFile = null;
+let outputUrl   = null;
+
+// ── DOM refs ──────────────────────────────────────────────────
+const dropZone        = document.getElementById('drop-zone');
+const fileInput       = document.getElementById('file-input');
+const fileStrip       = document.getElementById('file-strip');
+const fsName          = document.getElementById('fs-name');
+const fsMeta          = document.getElementById('fs-meta');
+const btnChange       = document.getElementById('btn-change');
+const convertAction   = document.getElementById('convert-action');
+const btnConvert      = document.getElementById('btn-convert');
+const loadingState    = document.getElementById('loading-state');
+const loadingSub      = document.getElementById('loading-sub');
+const resultsState    = document.getElementById('results-state');
+const btnDownload     = document.getElementById('btn-download');
+const btnReset        = document.getElementById('btn-reset');
+const renderContainer = document.getElementById('pdf-render-container');
+
+// ── Freemium limits ────────────────────────────────────────────
+const DAILY_LIMIT = 3;
+const STORAGE_KEY = 'swiftpdf_wordtopdf_usage';
+
+function getTodayKey() { return new Date().toISOString().slice(0, 10); }
+function getCount() {
+  try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); return d[getTodayKey()]||0; }
+  catch { return 0; }
+}
+function bumpCount() {
+  try {
+    const today = getTodayKey();
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    d[today] = (d[today]||0) + 1;
+    Object.keys(d).forEach(k => { if(k!==today) delete d[k]; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+  } catch {}
+}
+function window.swiftpdf.isLimitReached(STORAGE_KEY, DAILY_LIMIT) { return getCount() >= DAILY_LIMIT; }
+
+// ── File Loading ───────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = [...e.dataTransfer.files].find(file => file.name.endsWith('.docx'));
+  if (f) loadFile(f); else alert('Please drop a valid .docx file.');
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+btnChange.addEventListener('click', resetUI);
+
+function loadFile(file) {
+  if (!file.name.endsWith('.docx')) {
+    alert('Please choose a .docx file.');
+    return;
+  }
+  currentFile = file;
+  dropZone.style.display       = 'none';
+  fileStrip.style.display      = 'flex';
+  convertAction.style.display  = 'flex';
+  loadingState.style.display   = 'none';
+  resultsState.style.display   = 'none';
+
+  fsName.textContent = file.name;
+  fsMeta.textContent = formatBytes(file.size);
+}
+
+// ── Convert Logic ──────────────────────────────────────────────
+btnConvert.addEventListener('click', async () => {
+  if (!currentFile) return;
+  if (window.swiftpdf.isLimitReached(STORAGE_KEY, DAILY_LIMIT)) { window.swiftpdf.showFreemiumModal(); return; }
+
+  // UI Setup
+  convertAction.style.display = 'none';
+  fileStrip.style.display     = 'none';
+  loadingState.style.display  = 'block';
+  loadingSub.textContent      = 'Reading Word document layout...';
+  btnConvert.disabled = true;
+
+  try {
+    const arrayBuffer = await currentFile.arrayBuffer();
+    
+    // Step 1: Mammoth (.docx -> HTML)
+    loadingSub.textContent = 'Parsing text and styles...';
+    await new Promise(r => setTimeout(r, 100)); // UI yield
+    
+    const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+    const html = result.value || "<p>Blank document.</p>"; 
+    
+    // Step 2: Inject HTML to hidden container
+    renderContainer.innerHTML = html;
+    
+    // Step 3: Html2Pdf (HTML -> PDF blob)
+    loadingSub.textContent = 'Generating PDF file...';
+    await new Promise(r => setTimeout(r, 100)); // UI yield
+    
+    const opt = {
+      margin:       10, // margins in mm
+      filename:     currentFile.name.replace(/\.docx$/i, '') + '.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    const pdfBlob = await html2pdf().set(opt).from(renderContainer).output('blob');
+    
+    window.swiftpdf.bumpCount(STORAGE_KEY);
+
+    if (outputUrl) URL.revokeObjectURL(outputUrl);
+    outputUrl = URL.createObjectURL(pdfBlob);
+    
+    btnDownload.download = opt.filename;
+    btnDownload.href = outputUrl;
+
+    loadingState.style.display = 'none';
+    resultsState.style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    alert('Failed to convert to PDF: ' + err.message);
+    resetUI();
+  } finally {
+    btnConvert.disabled = false;
+  }
+});
+
+// ── Reset ──────────────────────────────────────────────────────
+btnReset.addEventListener('click', resetUI);
+
+function resetUI() {
+  currentFile = null;
+  renderContainer.innerHTML = '';
+  if (outputUrl) { URL.revokeObjectURL(outputUrl); outputUrl = null; }
+  
+  dropZone.style.display       = '';
+  fileStrip.style.display      = 'none';
+  convertAction.style.display  = 'none';
+  loadingState.style.display   = 'none';
+  resultsState.style.display   = 'none';
+}
+
+// ── Utils ──────────────────────────────────────────────────────
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(2) + ' MB';
+}
+window.addEventListener('scroll', () => {
+  document.querySelector('header').style.boxShadow =
+    window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,.08)' : 'none';
+}, { passive: true });
+</script>
+</body>
+</html>

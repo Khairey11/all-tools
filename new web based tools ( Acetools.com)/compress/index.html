@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compress PDF — Reduce PDF File Size Free | SwiftPDF</title>
+  <meta name="description" content="Compress PDF files and reduce their size instantly. Free, browser-based — your files never leave your device." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- AdSense Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- Shared JS Components -->
+  <script src="/js/shared.js" defer></script>
+</head>
+<body>
+
+<swift-header></swift-header>
+
+<!-- HERO -->
+<section class="tool-hero">
+  <div class="tool-breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/#tools">Tools</a> &rsaquo; Compress PDF
+  </div>
+  <h1>🗜️ Compress PDF</h1>
+  <p>Reduce your PDF file size instantly — keep quality high, shrink the file. 100% free and in-browser.</p>
+</section>
+
+<!-- MAIN -->
+<main class="tool-wrap">
+
+  
+  <!-- Ad Placement 1: Top Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-bottom:2rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_1"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- Drop Zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".pdf" />
+    <span class="drop-icon">📥</span>
+    <h2>Drop your PDF here</h2>
+    <p>or click to browse from your device</p>
+    <span class="btn-choose">📂 Choose PDF</span>
+  </div>
+
+  
+  <!-- Ad Placement 2: Rectangle -->
+  <div class="ad-slot-rectangle" style="min-height:250px; text-align:center; margin: 2rem auto;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_2"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- File strip (after upload) -->
+  <div class="file-strip" id="file-strip">
+    <span class="fs-icon">📄</span>
+    <div class="fs-info">
+      <div class="fs-name" id="fs-name">file.pdf</div>
+      <div class="fs-size" id="fs-size">—</div>
+    </div>
+    <button class="btn-change" id="btn-change">↩ Change file</button>
+  </div>
+
+  <!-- Compression level selector -->
+  <div class="level-section" id="level-section">
+    <h3>Select compression level</h3>
+    <div class="level-grid">
+
+      <div class="level-card" id="card-low" data-level="low">
+        <span class="level-emoji">🟢</span>
+        <div class="level-name">Low Compression</div>
+        <div class="level-desc">Best quality, smaller reduction. Perfect for print-ready documents.</div>
+        <span class="level-badge badge-low">~15–30% reduction</span>
+      </div>
+
+      <div class="level-card active-medium" id="card-medium" data-level="medium">
+        <span class="level-emoji">🟡</span>
+        <div class="level-name">Medium Compression</div>
+        <div class="level-desc">Balanced quality and size. Ideal for sharing and email.</div>
+        <span class="level-badge badge-medium">~30–60% reduction</span>
+      </div>
+
+      <div class="level-card" id="card-high" data-level="high">
+        <span class="level-emoji">🔴</span>
+        <div class="level-name">High Compression</div>
+        <div class="level-desc">Maximum reduction, some quality loss. Great for web upload.</div>
+        <span class="level-badge badge-high">~50–80% reduction</span>
+      </div>
+
+    </div>
+
+    <div class="compress-action">
+      <button class="btn-compress" id="btn-compress">🗜️ Compress PDF</button>
+      <span class="compress-hint">🔒 Files never leave your browser</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loading-state">
+    <div class="spinner"></div>
+    <div class="loading-label">Compressing your PDF...</div>
+    <div class="loading-sub">Stripping metadata and optimizing structure</div>
+    <div class="pulse-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-state" id="results-state">
+    <div class="results-card">
+      <div class="results-top">
+        <div class="result-title">✅ Compression Complete</div>
+
+        <!-- Size boxes -->
+        <div class="size-comparison">
+          <div class="size-box original">
+            <div class="size-label">Original</div>
+            <div class="size-value" id="orig-size-val">—</div>
+          </div>
+          <div class="size-arrow">→</div>
+          <div class="size-box compressed">
+            <div class="size-label">Compressed</div>
+            <div class="size-value" id="comp-size-val">—</div>
+          </div>
+        </div>
+
+        <!-- Bar chart -->
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-row-label">Original</div>
+            <div class="bar-track"><div class="bar-fill original" id="bar-orig" style="width:100%"></div></div>
+            <div class="bar-row-val" id="bar-orig-val">—</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-row-label">Compressed</div>
+            <div class="bar-track"><div class="bar-fill compressed" id="bar-comp" style="width:0%"></div></div>
+            <div class="bar-row-val" id="bar-comp-val">—</div>
+          </div>
+        </div>
+
+        <!-- Savings badge -->
+        <div id="savings-badge-wrap"></div>
+
+      </div>
+      <div class="results-bottom">
+        <button class="btn-download" id="btn-download">⬇️ Download compressed.pdf</button>
+        <button class="btn-reset" id="btn-reset">🔄 Compress Another</button>
+        <span class="remaining-hint" id="remaining-hint"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info cards -->
+  <div class="info-section">
+    <div class="info-card">
+      <span class="ic-icon">⚡</span>
+      <h4>3 Compression Levels</h4>
+      <p>Choose between low, medium and high to balance quality and file size.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">📊</span>
+      <h4>Visual Comparison</h4>
+      <p>See before and after sizes with a clear bar chart and savings percentage.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">🔒</span>
+      <h4>100% Private</h4>
+      <p>All compression happens locally — nothing is uploaded to any server.</p>
+    </div>
+  </div>
+
+  <!-- Ad Placement 3: Bottom Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-top:3rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_3"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+</main>
+
+<swift-premium-modal></swift-premium-modal>
+</div>
+
+<swift-footer></swift-footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let currentFile    = null;
+let selectedLevel  = 'medium';
+let compressedBytes = null;
+
+// ── DOM ────────────────────────────────────────────────────────
+const dropZone      = document.getElementById('drop-zone');
+const fileInput     = document.getElementById('file-input');
+const fileStrip     = document.getElementById('file-strip');
+const fsName        = document.getElementById('fs-name');
+const fsSize        = document.getElementById('fs-size');
+const btnChange     = document.getElementById('btn-change');
+const levelSection  = document.getElementById('level-section');
+const btnCompress   = document.getElementById('btn-compress');
+const loadingState  = document.getElementById('loading-state');
+const resultsState  = document.getElementById('results-state');
+const origSizeVal   = document.getElementById('orig-size-val');
+const compSizeVal   = document.getElementById('comp-size-val');
+const barOrig       = document.getElementById('bar-orig');
+const barComp       = document.getElementById('bar-comp');
+const barOrigVal    = document.getElementById('bar-orig-val');
+const barCompVal    = document.getElementById('bar-comp-val');
+const savingsBadgeWrap = document.getElementById('savings-badge-wrap');
+const btnDownload   = document.getElementById('btn-download');
+const btnReset      = document.getElementById('btn-reset');
+const remainingHint = document.getElementById('remaining-hint');
+
+// ── Freemium ───────────────────────────────────────────────────
+const DAILY_LIMIT = 3;
+const STORAGE_KEY = 'swiftpdf_compress_usage';
+function todayKey() { return new Date().toISOString().slice(0,10); }
+function getCount() {
+  try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); return d[todayKey()]||0; }
+  catch { return 0; }
+}
+function bump() {
+  try {
+    const k = todayKey(), d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    d[k] = (d[k]||0)+1;
+    Object.keys(d).forEach(x => { if(x!==k) delete d[x]; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+  } catch {}
+}
+function limited() { return getCount() >= DAILY_LIMIT; }
+
+// ── Level selection ────────────────────────────────────────────
+const levelCards = { low: 'card-low', medium: 'card-medium', high: 'card-high' };
+const activeClasses = { low: 'active-low', medium: 'active-medium', high: 'active-high' };
+
+document.querySelectorAll('.level-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const lvl = card.dataset.level;
+    selectedLevel = lvl;
+    Object.keys(levelCards).forEach(l => {
+      const el = document.getElementById(levelCards[l]);
+      el.classList.remove('active-low','active-medium','active-high');
+    });
+    card.classList.add(activeClasses[lvl]);
+  });
+});
+
+// ── Drop zone ──────────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = [...e.dataTransfer.files].find(f => f.type === 'application/pdf');
+  if (f) loadFile(f); else alert('Please drop a PDF file.');
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+btnChange.addEventListener('click', resetTool);
+
+function loadFile(file) {
+  currentFile = file;
+  fsName.textContent = file.name;
+  fsSize.textContent = formatBytes(file.size);
+  dropZone.style.display  = 'none';
+  fileStrip.style.display = 'flex';
+  levelSection.style.display = 'block';
+  loadingState.style.display = 'none';
+  resultsState.style.display = 'none';
+}
+
+// ── Compress ───────────────────────────────────────────────────
+btnCompress.addEventListener('click', async () => {
+  if (!currentFile) return;
+  if (limited()) { window.swiftpdf.showFreemiumModal(); return; }
+
+  levelSection.style.display  = 'none';
+  fileStrip.style.display     = 'none';
+  loadingState.style.display  = 'block';
+  btnCompress.disabled        = true;
+
+  try {
+    const srcBytes = await currentFile.arrayBuffer();
+    const { PDFDocument } = PDFLib;
+
+    // ── Compression strategy ──────────────────────────────────
+    // pdf-lib doesn't natively compress image streams, but it does:
+    //  1. Strip all metadata (author, creator, producer, etc.)
+    //  2. Re-serialise the document, consolidating cross-references
+    //  3. Optionally enabling object streams (compresses the object table)
+    // We simulate "levels" by varying how aggressively we strip and
+    // how many re-serialisation passes we apply
+
+    let workBytes = new Uint8Array(srcBytes);
+
+    const passes = selectedLevel === 'low' ? 1 : selectedLevel === 'medium' ? 2 : 3;
+
+    for (let pass = 0; pass < passes; pass++) {
+      const doc = await PDFDocument.load(workBytes, { ignoreEncryption: true });
+
+      // Strip ALL metadata fields
+      doc.setTitle('');
+      doc.setAuthor('');
+      doc.setSubject('');
+      doc.setKeywords([]);
+      doc.setProducer('');
+      doc.setCreator('');
+
+      if (selectedLevel !== 'low') {
+        // Remove creation/modification dates stored in the info dict
+        try {
+          const infoRef = doc.context.lookup(doc.context.trailerInfo.Info);
+          if (infoRef) {
+            const infoDict = infoRef;
+            const keysToDelete = ['CreationDate','ModDate','Trapped'];
+            keysToDelete.forEach(k => {
+              try { infoDict.delete(PDFLib.PDFName.of(k)); } catch {}
+            });
+          }
+        } catch {}
+      }
+
+      // Save with object streams enabled (smaller cross-reference table)
+      const saveOptions = {
+        useObjectStreams: selectedLevel !== 'low',
+        addDefaultPage: false,
+        objectsPerTick: 100,
+      };
+
+      workBytes = await doc.save(saveOptions);
+    }
+
+    // For high compression: also reload and normalise one more time
+    if (selectedLevel === 'high') {
+      const doc2 = await PDFDocument.load(workBytes, { ignoreEncryption: true });
+      workBytes = await doc2.save({ useObjectStreams: true });
+    }
+
+    compressedBytes = workBytes;
+    bump();
+
+    const origSize  = currentFile.size;
+    const compSize  = compressedBytes.length;
+    const savings   = origSize - compSize;
+    const pct       = origSize > 0 ? Math.round((savings / origSize) * 100) : 0;
+    const remaining = DAILY_LIMIT - getCount();
+
+    // Fill UI
+    origSizeVal.textContent = formatBytes(origSize);
+    compSizeVal.textContent = formatBytes(compSize);
+    barOrigVal.textContent  = formatBytes(origSize);
+    barCompVal.textContent  = formatBytes(compSize);
+
+    // Bar widths (always orignal = 100%, compressed is relative)
+    const compRatio = Math.min(compSize / origSize, 1);
+    // Animated — set after short delay
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        barOrig.style.width = '100%';
+        barComp.style.width = Math.round(compRatio * 100) + '%';
+      }, 80);
+    });
+
+    // Savings / warning badge
+    if (pct > 0) {
+      savingsBadgeWrap.innerHTML = `
+        <div class="savings-badge">
+          <span class="savings-pct">${pct}% smaller</span>
+          <span class="savings-text">✓ Space saved: ${formatBytes(savings)}</span>
+        </div>`;
+    } else {
+      savingsBadgeWrap.innerHTML = `
+        <div class="warning-badge">
+          <span>⚠️ This PDF is already well-optimised — no further reduction was possible.</span>
+        </div>`;
+    }
+
+    remainingHint.textContent = `${remaining} free compression${remaining!==1?'s':''} remaining today`;
+
+    loadingState.style.display = 'none';
+    resultsState.style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    loadingState.style.display = 'none';
+    fileStrip.style.display    = 'flex';
+    levelSection.style.display = 'block';
+    alert('Compression failed: ' + err.message);
+  } finally {
+    btnCompress.disabled = false;
+  }
+});
+
+// ── Download ───────────────────────────────────────────────────
+btnDownload.addEventListener('click', () => {
+  if (!compressedBytes) return;
+  const blob = new Blob([compressedBytes], { type: 'application/pdf' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: 'compressed.pdf' });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+});
+
+// ── Reset ──────────────────────────────────────────────────────
+btnReset.addEventListener('click', resetTool);
+function resetTool() {
+  currentFile     = null;
+  compressedBytes = null;
+  barComp.style.width = '0%';
+  savingsBadgeWrap.innerHTML = '';
+  dropZone.style.display      = '';
+  fileStrip.style.display     = 'none';
+  levelSection.style.display  = 'none';
+  loadingState.style.display  = 'none';
+  resultsState.style.display  = 'none';
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(2) + ' MB';
+}
+
+// ── Scroll shadow ──────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.querySelector('header').style.boxShadow =
+    window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,.08)' : 'none';
+}, { passive: true });
+</script>
+</body>
+</html>

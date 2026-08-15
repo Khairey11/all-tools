@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF to Word — Convert PDF to DOCX Free | SwiftPDF</title>
+  <meta name="description" content="Convert PDF documents to editable Microsoft Word files (.docx). Extract text while keeping paragraphs intact. Free and browser-based." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- AdSense Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- Shared JS Components -->
+  <script src="/js/shared.js" defer></script>
+</head>
+<body>
+
+<swift-header></swift-header>
+
+<!-- TOOL HERO -->
+<section class="tool-hero">
+  <div class="tool-breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/#tools">Tools</a> &rsaquo; PDF to Word
+  </div>
+  <h1>📝 PDF to Word</h1>
+  <p>Convert your PDF files to editable Microsoft Word (.docx) documents. Your layout and text are preserved.</p>
+  
+  <div class="mockup-wrap">
+    <div class="mockdoc doc-pdf">PDF</div>
+    <div class="mockup-arrow">→</div>
+    <div class="mockdoc doc-word">DOCX</div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="tool-wrap">
+
+  
+  <!-- Ad Placement 1: Top Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-bottom:2rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_1"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<div class="info-box-blue">
+    <span>ℹ️</span>
+    <div>
+      <strong>Note on conversion quality:</strong>
+      Text-based PDFs convert perfectly into editable Word paragraphs. Scanned PDFs or image-only PDFs do not support OCR and will have limited results.
+    </div>
+  </div>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".pdf" />
+    <span class="drop-icon">📥</span>
+    <h2>Drop your PDF here</h2>
+    <p>or click to browse from your device</p>
+    <span class="btn-choose">📂 Choose PDF</span>
+  </div>
+
+  
+  <!-- Ad Placement 2: Rectangle -->
+  <div class="ad-slot-rectangle" style="min-height:250px; text-align:center; margin: 2rem auto;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_2"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- File Strip -->
+  <div class="file-strip" id="file-strip">
+    <span class="fs-icon">📄</span>
+    <div class="fs-info">
+      <div class="fs-name" id="fs-name">filename.pdf</div>
+      <div class="fs-meta" id="fs-meta">—</div>
+    </div>
+    <span class="fs-badge" id="fs-badge">— pages</span>
+    <button class="btn-change" id="btn-change">↩ Change file</button>
+  </div>
+
+  <!-- Convert Action -->
+  <div class="convert-action" id="convert-action">
+    <button class="btn-convert" id="btn-convert">📝 Convert to Word</button>
+    <span class="convert-hint">🔒 Extraction happens completely in your browser</span>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label" id="progress-label">Preparing DOCX engine...</div>
+    <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="progress-sub" id="progress-sub">Checking file format</div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-state" id="results-state">
+    <div class="result-card">
+      <span class="result-icon">🎉</span>
+      <h3>Conversion Complete</h3>
+      <p>Your PDF has been successfully extracted into a Word document.</p>
+      <a href="#" class="btn-download" id="btn-download" download="converted.docx">⬇️ Download Word file</a>
+    </div>
+    <div class="results-reset">
+      <button class="btn-reset" id="btn-reset">🔄 Convert Another PDF</button>
+    </div>
+  </div>
+
+  <!-- Info cards -->
+  <div class="info-section">
+    <div class="info-card">
+      <span class="ic-icon">📝</span>
+      <h4>Editable Text</h4>
+      <p>Converts native PDF text directly into editable Word paragraphs.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">📃</span>
+      <h4>Page for Page</h4>
+      <p>Your document structure is preserved with appropriate page breaks injected.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">🔒</span>
+      <h4>Local Extraction</h4>
+      <p>Everything runs cleanly using browser standards — your files are never uploaded.</p>
+    </div>
+  </div>
+
+  <!-- Ad Placement 3: Bottom Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-top:3rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_3"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+</main>
+
+<swift-premium-modal></swift-premium-modal>
+</div>
+
+<swift-footer></swift-footer>
+
+<script>
+// ── Setup pdf.js worker ────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── Globals ────────────────────────────────────────────────────
+let currentFile = null;
+let totalPages  = 0;
+let outputUrl   = null;
+
+// ── DOM refs ──────────────────────────────────────────────────
+const dropZone      = document.getElementById('drop-zone');
+const fileInput     = document.getElementById('file-input');
+const fileStrip     = document.getElementById('file-strip');
+const fsName        = document.getElementById('fs-name');
+const fsMeta        = document.getElementById('fs-meta');
+const fsBadge       = document.getElementById('fs-badge');
+const btnChange     = document.getElementById('btn-change');
+const convertAction = document.getElementById('convert-action');
+const btnConvert    = document.getElementById('btn-convert');
+const progressWrap  = document.getElementById('progress-wrap');
+const progressBar   = document.getElementById('progress-bar');
+const progressLabel = document.getElementById('progress-label');
+const progressSub   = document.getElementById('progress-sub');
+const resultsState  = document.getElementById('results-state');
+const btnDownload   = document.getElementById('btn-download');
+const btnReset      = document.getElementById('btn-reset');
+
+// ── Freemium limits ────────────────────────────────────────────
+const DAILY_LIMIT = 3;
+const STORAGE_KEY = 'swiftpdf_toword_usage';
+
+function getTodayKey() { return new Date().toISOString().slice(0, 10); }
+function getCount() {
+  try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); return d[getTodayKey()]||0; }
+  catch { return 0; }
+}
+function bumpCount() {
+  try {
+    const today = getTodayKey();
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    d[today] = (d[today]||0) + 1;
+    Object.keys(d).forEach(k => { if(k!==today) delete d[k]; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+  } catch {}
+}
+function window.swiftpdf.isLimitReached(STORAGE_KEY, DAILY_LIMIT) { return getCount() >= DAILY_LIMIT; }
+
+// ── File Loading ───────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = [...e.dataTransfer.files].find(file => file.type === 'application/pdf');
+  if (f) loadFile(f); else alert('Please drop a valid PDF file.');
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+btnChange.addEventListener('click', resetUI);
+
+async function loadFile(file) {
+  currentFile = file;
+  dropZone.style.display       = 'none';
+  fileStrip.style.display      = 'flex';
+  convertAction.style.display  = 'none';
+  progressWrap.style.display   = 'none';
+  resultsState.style.display   = 'none';
+
+  fsName.textContent  = file.name;
+  fsMeta.textContent  = formatBytes(file.size);
+  fsBadge.textContent = 'Scanning...';
+
+  try {
+    const ab  = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    totalPages = pdf.numPages;
+
+    fsMeta.textContent  = `${formatBytes(file.size)}`;
+    fsBadge.textContent = `${totalPages} page${totalPages !== 1 ? 's' : ''}`;
+    convertAction.style.display = 'flex';
+  } catch (err) {
+    console.error(err);
+    alert('Could not open PDF file. It might be corrupted or encrypted.');
+    resetUI();
+  }
+}
+
+// ── Convert Logic ──────────────────────────────────────────────
+btnConvert.addEventListener('click', async () => {
+  if (!currentFile) return;
+  if (window.swiftpdf.isLimitReached(STORAGE_KEY, DAILY_LIMIT)) { window.swiftpdf.showFreemiumModal(); return; }
+
+  // UI Setup
+  convertAction.style.display = 'none';
+  fileStrip.style.display     = 'none';
+  progressWrap.style.display  = 'block';
+  btnConvert.disabled = true;
+
+  try {
+    const ab = await currentFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    
+    // We will build docx Paragraphs here
+    const docChildren = [];
+    const { Document, Packer, Paragraph, TextRun, PageBreak } = docx;
+
+    for (let i = 1; i <= totalPages; i++) {
+      progressLabel.textContent = `Extracting text from page ${i} of ${totalPages}...`;
+      progressSub.textContent   = `Scanning page layout...`;
+      progressBar.style.width   = Math.round(((i - 1) / totalPages) * 100) + '%';
+      
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      
+      let lastY = null;
+      let currentLine = "";
+      const lines = [];
+
+      // Simple heuristic: read items, if Y drops by > 5 pts, assume new line
+      for (const item of textContent.items) {
+        const y = item.transform[5]; 
+        
+        if (lastY !== null && Math.abs(y - lastY) > 5) {
+          if (currentLine.trim()) lines.push(currentLine.trim());
+          currentLine = "";
+        }
+        currentLine += item.str;
+        
+        // rudimentary spacing logic if hasn't EOL but space gap?
+        // simple concatenation works okay for majority of properly structured PDFs
+        lastY = y;
+      }
+      if (currentLine.trim()) lines.push(currentLine.trim());
+
+      if (lines.length === 0) {
+        lines.push("[No extractable text found on this page]");
+      }
+
+      // Convert extracted lines to Word Paragraphs
+      lines.forEach(lineText => {
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: lineText, size: 24 })] // size corresponds to half-points (24 = 12pt font)
+        }));
+      });
+
+      // Add page break if it's not the last page
+      if (i < totalPages) {
+        docChildren.push(new Paragraph({
+          children: [new PageBreak()]
+        }));
+      }
+
+      await new Promise(r => setTimeout(r, 0)); // yield to UI
+    }
+
+    progressBar.style.width = '100%';
+    progressLabel.textContent = "Finalizing Word Document...";
+    progressSub.textContent   = "Writing .docx binary...";
+
+    // Create Document
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: docChildren
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    window.swiftpdf.bumpCount(STORAGE_KEY);
+
+    if (outputUrl) URL.revokeObjectURL(outputUrl);
+    outputUrl = URL.createObjectURL(blob);
+    
+    // Suggest a name
+    const origName = currentFile.name.replace(/\.pdf$/i, '');
+    btnDownload.download = `${origName}_converted.docx`;
+    btnDownload.href = outputUrl;
+
+    progressWrap.style.display = 'none';
+    resultsState.style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    alert('Failed to convert to Word: ' + err.message);
+    resetUI();
+  } finally {
+    btnConvert.disabled = false;
+  }
+});
+
+// ── Reset ──────────────────────────────────────────────────────
+btnReset.addEventListener('click', resetUI);
+
+function resetUI() {
+  currentFile = null;
+  totalPages  = 0;
+  if (outputUrl) { URL.revokeObjectURL(outputUrl); outputUrl = null; }
+  
+  dropZone.style.display       = '';
+  fileStrip.style.display      = 'none';
+  convertAction.style.display  = 'none';
+  progressWrap.style.display   = 'none';
+  resultsState.style.display   = 'none';
+}
+
+// ── Utils ──────────────────────────────────────────────────────
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(2) + ' MB';
+}
+window.addEventListener('scroll', () => {
+  document.querySelector('header').style.boxShadow =
+    window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,.08)' : 'none';
+}, { passive: true });
+</script>
+</body>
+</html>

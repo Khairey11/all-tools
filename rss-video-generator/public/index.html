@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS Video Generator - AI-Powered News Processing</title>
+    <meta name="description"
+        content="Advanced RSS feed processor with AI summarization, image generation, and multi-format video creation">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="url(#gradient1)" />
+                        <path d="M12 20L18 14L24 20L30 14" stroke="white" stroke-width="2" stroke-linecap="round" />
+                        <path d="M12 26L18 20L24 26L30 20" stroke="white" stroke-width="2" stroke-linecap="round" />
+                        <defs>
+                            <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#667eea" />
+                                <stop offset="100%" stop-color="#764ba2" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h1>RSS Video Generator</h1>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+                    <button class="nav-btn" data-view="feeds">Feeds</button>
+                    <button class="nav-btn" data-view="items">Items</button>
+                    <button class="nav-btn" data-view="analytics">Analytics</button>
+                    <button class="nav-btn" data-view="settings">Settings</button>
+                </nav>
+                <div class="connection-status">
+                    <div class="status-indicator" id="wsStatus"></div>
+                    <span id="wsText">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view active">
+                <div class="view-header">
+                    <h2>Dashboard</h2>
+                    <button class="btn btn-primary" id="fetchAllBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M17 3V7H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Fetch All Feeds
+                    </button>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Active Feeds</div>
+                            <div class="stat-value" id="stat-feeds">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z"
+                                    stroke="white" stroke-width="2" />
+                                <path d="M9 9H15M9 13H15M9 17H12" stroke="white" stroke-width="2"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Items</div>
+                            <div class="stat-value" id="stat-items">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" stroke-width="2" />
+                                <circle cx="8.5" cy="8.5" r="1.5" fill="white" />
+                                <path d="M21 15L16 10L5 21" stroke="white" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Generated Images</div>
+                            <div class="stat-value" id="stat-images">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M23 7L16 12L23 17V7Z" stroke="white" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <rect x="1" y="5" width="15" height="14" rx="2" stroke="white" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Generated Videos</div>
+                            <div class="stat-value" id="stat-videos">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="section">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-feed" id="activityFeed">
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <circle cx="32" cy="32" r="30" stroke="#e0e0e0" stroke-width="2" />
+                                <path d="M32 20V32L40 40" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            <p>No recent activity</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Topics -->
+                <div class="section">
+                    <h3>Trending Topics</h3>
+                    <div class="trending-grid" id="trendingTopics">
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <path d="M8 48L24 32L32 40L56 16" stroke="#e0e0e0" stroke-width="2"
+                                    stroke-linecap="round" />
+                                <circle cx="24" cy="32" r="3" fill="#e0e0e0" />
+                                <circle cx="32" cy="40" r="3" fill="#e0e0e0" />
+                                <circle cx="56" cy="16" r="3" fill="#e0e0e0" />
+                            </svg>
+                            <p>No trending topics yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feeds View -->
+            <div id="feeds-view" class="view">
+                <div class="view-header">
+                    <h2>RSS Feeds</h2>
+                    <button class="btn btn-primary" id="addFeedBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add Feed
+                    </button>
+                </div>
+
+                <div class="feeds-grid" id="feedsGrid">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <!-- Items View -->
+            <div id="items-view" class="view">
+                <div class="view-header">
+                    <h2>Feed Items</h2>
+                    <div class="view-actions">
+                        <select class="select" id="feedFilter">
+                            <option value="">All Feeds</option>
+                        </select>
+                        <button class="btn btn-secondary" id="processSelectedBtn">Process Selected</button>
+                    </div>
+                </div>
+
+                <div class="items-list" id="itemsList">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="analytics-view" class="view">
+                <div class="view-header">
+                    <h2>Analytics</h2>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Sentiment Distribution</h3>
+                        <div class="sentiment-chart" id="sentimentChart">
+                            <div class="sentiment-bar positive">
+                                <div class="sentiment-fill" style="width: 0%"></div>
+                                <span class="sentiment-label">Positive: <strong>0%</strong></span>
+                            </div>
+                            <div class="sentiment-bar neutral">
+                                <div class="sentiment-fill" style="width: 0%"></div>
+                                <span class="sentiment-label">Neutral: <strong>0%</strong></span>
+                            </div>
+                            <div class="sentiment-bar negative">
+                                <div class="sentiment-fill" style="width: 0%"></div>
+                                <span class="sentiment-label">Negative: <strong>0%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <h3>Processing Stats</h3>
+                        <div class="stats-list">
+                            <div class="stat-row">
+                                <span>Items Today</span>
+                                <strong id="items-today">0</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Avg Sentiment</span>
+                                <strong id="avg-sentiment">0.00</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Total Summaries</span>
+                                <strong id="total-summaries">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settings-view" class="view">
+                <div class="view-header">
+                    <h2>Settings</h2>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Webhooks</h3>
+                        <div id="webhooksList"></div>
+                        <button class="btn btn-secondary" id="addWebhookBtn">Add Webhook</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Export Data</h3>
+                        <div class="export-options">
+                            <button class="btn btn-secondary" id="exportJsonBtn">Export as JSON</button>
+                            <button class="btn btn-secondary" id="exportCsvBtn">Export as CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal" id="addFeedModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add RSS Feed</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Feed URL</label>
+                    <input type="url" id="feedUrl" class="input" placeholder="https://example.com/feed.xml" required>
+                </div>
+                <div class="form-group">
+                    <label>Feed Name</label>
+                    <input type="text" id="feedName" class="input" placeholder="My News Feed" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="feedCategory" class="input" placeholder="Technology">
+                </div>
+                <div class="form-group">
+                    <label>Language</label>
+                    <select id="feedLanguage" class="select">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">Cancel</button>
+                <button class="btn btn-primary" id="submitFeedBtn">Add Feed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

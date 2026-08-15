@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — SwiftPDF Pro | SwiftPDF</title>
+  <meta name="description" content="Simple, transparent pricing. Free forever plan available. Upgrade to Pro for unlimited PDF conversions, edits, and batch processing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <!-- AdSense Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- Shared JS Components -->
+  <script src="/js/shared.js" defer></script>
+  <style>
+    /* PRICING HERO */
+    .pricing-hero {
+      background: linear-gradient(160deg, #fff 50%, #fff4f4 100%);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .pricing-hero h1 { font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 900; letter-spacing: -0.04em; margin-bottom: 1rem; color: var(--gray-900); }
+    .pricing-hero p { color: var(--gray-600); font-size: 1.1rem; max-width: 580px; margin: 0 auto; line-height: 1.6; }
+
+    /* PRICING GRID */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      max-width: 1100px;
+      margin: 4rem auto 6rem;
+      padding: 0 2rem;
+      align-items: stretch;
+    }
+
+    .plan-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+    .plan-card.pro {
+      border: 2px solid var(--red);
+      box-shadow: var(--shadow-lg);
+      transform: scale(1.03);
+      z-index: 2;
+    }
+    .plan-card.pro:hover { transform: scale(1.03) translateY(-4px); }
+
+    .popular-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--red), var(--orange));
+      color: var(--white);
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 0.4rem 1.2rem;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 12px rgba(255,68,68,.3);
+      white-space: nowrap;
+    }
+
+    .plan-name { font-size: 1.25rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .plan-card.pro .plan-name { color: var(--red); }
+    .plan-price { font-size: 3.5rem; font-weight: 900; color: var(--gray-900); margin-bottom: 0.5rem; line-height: 1; letter-spacing: -0.05em; }
+    .plan-price span { font-size: 1.1rem; color: var(--gray-600); font-weight: 500; letter-spacing: 0; }
+    .plan-desc { color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--gray-200); }
+
+    .plan-features { list-style: none; margin-bottom: 2.5rem; flex: 1; }
+    .plan-features li { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.2rem; font-size: 0.95rem; color: var(--gray-700); line-height: 1.4; }
+    .pf-icon { color: var(--red); font-weight: 900; font-size: 1.1rem; line-height: 1.2; flex-shrink: 0; }
+    .plan-card.pro .pf-icon { color: var(--red); }
+    
+    .btn-plan {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 1.1rem;
+      border-radius: 50px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-decoration: none;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+
+    /* Outlined Button (Free) */
+    .btn-free { background: transparent; color: var(--gray-900); border: 2px solid var(--gray-200); }
+    .btn-free:hover { border-color: var(--gray-900); background: var(--gray-50); }
+
+    /* Filled Red Button (Pro) */
+    .btn-pro-plan { background: linear-gradient(135deg, var(--red), var(--orange)); color: var(--white); border: none; box-shadow: 0 4px 16px rgba(255,68,68,.35); }
+    .btn-pro-plan:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,68,68,.45); }
+
+    /* Dark Button (Business) */
+    .btn-business { background: var(--gray-900); color: var(--white); border: none; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+    .btn-business:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+
+    /* FAQ SECTION */
+    .faq-section { background: var(--gray-50); padding: 6rem 2rem; border-top: 1px solid var(--gray-200); }
+    .faq-inner { max-width: 800px; margin: 0 auto; }
+    .faq-header { text-align: center; margin-bottom: 4rem; }
+    .faq-header h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
+    .faq-header p { color: var(--gray-600); font-size: 1.05rem; }
+
+    .faq-grid { display: flex; flex-direction: column; gap: 1.5rem; }
+    .faq-item { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 1.75rem 2rem; box-shadow: var(--shadow-sm); transition: transform var(--transition); }
+    .faq-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .faq-item h3 { font-size: 1.1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+    .faq-item h3::before { content: 'Q.'; color: var(--red); font-weight: 900; }
+    .faq-item p { color: var(--gray-600); font-size: 0.95rem; line-height: 1.6; padding-left: 1.8rem; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0 1rem; max-width: 100%; }
+      .plan-card { padding: 2rem 1.5rem; }
+    }
+    @media (max-width: 900px) {
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; gap: 3rem; margin-top: 5rem; }
+      .plan-card.pro { transform: none; }
+      .plan-card.pro:hover { transform: translateY(-4px); }
+    }
+    @media (max-width: 600px) {
+      .pricing-hero { padding: 4rem 1.25rem 3rem; }
+      .faq-section { padding: 4rem 1.25rem; }
+      .faq-item { padding: 1.5rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<swift-header></swift-header>
+
+<!-- HERO -->
+<section class="pricing-hero">
+  <h1>Simple, Transparent Pricing</h1>
+  <p>Unlock everything you need to manage your documents. Start for free, upgrade when you need superpowers.</p>
+</section>
+
+<!-- PRICING GRID -->
+<main>
+  
+  <!-- Ad Placement 1: Top Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-bottom:2rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_1"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  <div class="pricing-grid">
+    
+    <!-- FREE -->
+    <div class="plan-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <div class="plan-desc">For occasional lightweight PDF tasks and simple edits.</div>
+      
+      <ul class="plan-features">
+        <li><span class="pf-icon">✓</span> 3 operations per day</li>
+        <li><span class="pf-icon">✓</span> All basic tools included</li>
+        <li><span class="pf-icon">✓</span> Browser-based processing</li>
+        <li><span class="pf-icon">✓</span> No signup needed</li>
+        <li><span class="pf-icon">✓</span> 100% Secure & Private</li>
+      </ul>
+      
+      <a href="/#tools" class="btn-plan btn-free">Use for Free</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="plan-card pro">
+      <div class="popular-badge">⭐ Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$4.99<span>/mo</span></div>
+      <div class="plan-desc">For professionals who need unlimited access and speed.</div>
+      
+      <ul class="plan-features">
+        <li><span class="pf-icon">✓</span> <strong>Unlimited operations</strong></li>
+        <li><span class="pf-icon">✓</span> Batch processing (multiple files)</li>
+        <li><span class="pf-icon">✓</span> Priority processing speed</li>
+        <li><span class="pf-icon">✓</span> Ad-free experience</li>
+        <li><span class="pf-icon">✓</span> Email support</li>
+        <li><span class="pf-icon">✓</span> Max file size up to 500MB</li>
+      </ul>
+      
+      <a href="#" class="btn-plan btn-pro-plan">🚀 Get Pro</a>
+    </div>
+
+    <!-- BUSINESS -->
+    <div class="plan-card">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">$14.99<span>/mo</span></div>
+      <div class="plan-desc">For teams and developers needing API integration.</div>
+      
+      <ul class="plan-features">
+        <li><span class="pf-icon">✓</span> Everything in Pro</li>
+        <li><span class="pf-icon">✓</span> API access</li>
+        <li><span class="pf-icon">✓</span> White-label option</li>
+        <li><span class="pf-icon">✓</span> Team accounts (5 users)</li>
+        <li><span class="pf-icon">✓</span> Priority 24/7 support</li>
+        <li><span class="pf-icon">✓</span> Uptime SLA</li>
+      </ul>
+      
+      <a href="#" class="btn-plan btn-business">Get Business</a>
+    </div>
+
+  </div>
+
+  <!-- Ad Placement 3: Bottom Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-top:3rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_3"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+</main>
+
+<!-- FAQ SECTION -->
+<section class="faq-section">
+  <div class="faq-inner">
+    <div class="faq-header">
+      <h2>Frequently Asked Questions</h2>
+      <p>Everything you need to know about the product and billing.</p>
+    </div>
+    
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h3>Are my files secure?</h3>
+        <p>Yes. All processing happens entirely within your browser. Your files are never uploaded to our servers or seen by anyone else. We use 256-bit SSL encryption for all connections.</p>
+      </div>
+      
+      <div class="faq-item">
+        <h3>Can I cancel anytime?</h3>
+        <p>Absolutely. There are no long-term contracts or hidden fees. You can cancel your Pro or Business subscription at any time right from your account dashboard.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>What payment methods do you accept?</h3>
+        <p>We accept all major credit and debit cards (Visa, Mastercard, American Express, Discover) as well as PayPal and Apple Pay for secure, fast transactions.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Is there a free trial?</h3>
+        <p>We don't offer a time-limited free trial because our Free plan is available forever! You can use the core tools 3 times a day at zero cost to test our quality before upgrading.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<swift-footer></swift-footer>
+
+</body>
+</html>

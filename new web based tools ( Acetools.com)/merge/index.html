@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge PDF — Combine PDF Files Free | SwiftPDF</title>
+  <meta name="description" content="Merge multiple PDF files into one instantly. Free, browser-based — your files never leave your device." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- AdSense Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- Shared JS Components -->
+  <script src="/js/shared.js" defer></script>
+</head>
+<body>
+
+<swift-header></swift-header>
+
+<!-- ── TOOL HERO ── -->
+<section class="tool-hero">
+  <div class="tool-breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/#tools">Tools</a> &rsaquo; Merge PDF
+  </div>
+  <h1><span class="icon">📄</span> Merge PDF</h1>
+  <p>Combine multiple PDF files into one seamless document — fast, free, and 100% in your browser.</p>
+</section>
+
+<!-- ── TOOL AREA ── -->
+<main class="tool-wrap" id="tool-main">
+
+  
+  <!-- Ad Placement 1: Top Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-bottom:2rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_1"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- Drop Zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".pdf" multiple />
+    <span class="drop-icon">📥</span>
+    <h2>Drop PDF files here</h2>
+    <p>or click to browse from your device</p>
+    <span class="btn-choose">📂 Choose Files</span>
+  </div>
+
+  
+  <!-- Ad Placement 2: Rectangle -->
+  <div class="ad-slot-rectangle" style="min-height:250px; text-align:center; margin: 2rem auto;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_2"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- File List -->
+  <div class="file-list-section" id="file-list-section">
+    <div class="file-list-header">
+      <div>
+        <span class="file-badge" id="file-count-badge">0 Files</span>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+        <label class="btn-add-more">
+          ＋ Add More Files
+          <input type="file" id="add-more-input" accept=".pdf" multiple />
+        </label>
+      </div>
+    </div>
+    <div class="file-list" id="file-list" role="list" aria-label="PDF files to merge"></div>
+    <div class="merge-action">
+      <button class="btn-merge" id="btn-merge">🔗 Merge PDF</button>
+      <span class="merge-hint">🔒 Files never leave your browser</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" id="loading-state">
+    <div class="spinner"></div>
+    <p>Merging your PDFs...</p>
+    <small>This may take a moment for large files</small>
+  </div>
+
+  <!-- Success State -->
+  <div class="success-state" id="success-state">
+    <div class="success-icon">🎉</div>
+    <h2>PDFs Merged Successfully!</h2>
+    <p id="success-desc">Your merged PDF is ready to download.</p>
+    <div class="success-actions">
+      <button class="btn-download" id="btn-download">⬇️ Download merged.pdf</button>
+      <button class="btn-reset" id="btn-reset">🔄 Merge Another</button>
+    </div>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="info-section">
+    <div class="info-card">
+      <span class="ic-icon">🔒</span>
+      <h4>100% Private</h4>
+      <p>All merging happens in your browser. Your files are never uploaded.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">⚡</span>
+      <h4>Lightning Fast</h4>
+      <p>Powered by pdf-lib. Merge dozens of PDFs in just seconds.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">✨</span>
+      <h4>Order Control</h4>
+      <p>Drag and drop to reorder files before merging — full control.</p>
+    </div>
+  </div>
+
+  <!-- Ad Placement 3: Bottom Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-top:3rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_3"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+</main>
+
+<!-- ── FREEMIUM MODAL ── -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-icon">⭐</div>
+    <h2 id="modal-title">Daily Limit Reached</h2>
+    <p>You've used your <strong>3 free merges</strong> today. Upgrade to Pro for unlimited merges, larger files, and priority processing.</p>
+    <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.5rem;text-align:left;">
+      <div style="font-size:.85rem;font-weight:700;color:var(--gray-900);margin-bottom:.5rem;">⚡ Pro Plan — $4.99/month</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:.3rem;">
+        <li style="font-size:.82rem;color:var(--gray-600);">✅ Unlimited merges per day</li>
+        <li style="font-size:.82rem;color:var(--gray-600);">✅ Files up to 500MB</li>
+        <li style="font-size:.82rem;color:var(--gray-600);">✅ Priority processing</li>
+        <li style="font-size:.82rem;color:var(--gray-600);">✅ All 9 PDF tools unlocked</li>
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <a href="/pricing" class="btn-upgrade">🚀 Upgrade Now — $4.99/month</a>
+      <button class="btn-maybe" id="btn-maybe">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+<swift-footer></swift-footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let files = [];        // Array of File objects in merge order
+let mergedBytes = null; // Uint8Array of merged PDF
+
+// ── DOM refs ──────────────────────────────────────────────────
+const dropZone       = document.getElementById('drop-zone');
+const fileInput      = document.getElementById('file-input');
+const addMoreInput   = document.getElementById('add-more-input');
+const fileListSec    = document.getElementById('file-list-section');
+const fileListEl     = document.getElementById('file-list');
+const fileCountBadge = document.getElementById('file-count-badge');
+const btnMerge       = document.getElementById('btn-merge');
+const loadingState   = document.getElementById('loading-state');
+const successState   = document.getElementById('success-state');
+const btnDownload    = document.getElementById('btn-download');
+const btnReset       = document.getElementById('btn-reset');
+const successDesc    = document.getElementById('success-desc');
+
+// ── Header mobile menu ─────────────────────────────────────────
+menuToggle.addEventListener('click', () => {
+  const isOpen = mobileNav.classList.toggle('open');
+  menuToggle.setAttribute('aria-expanded', isOpen);
+  const spans = menuToggle.querySelectorAll('span');
+  if (isOpen) {
+    spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+    spans[1].style.opacity   = '0';
+    spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+  } else {
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+  }
+});
+
+// ── Freemium logic ─────────────────────────────────────────────
+const DAILY_LIMIT = 3;
+const STORAGE_KEY = 'swiftpdf_merge_usage';
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+function getMergeCount() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const today = getTodayKey();
+    return raw[today] || 0;
+  } catch { return 0; }
+}
+
+function incrementMergeCount() {
+  try {
+    const today = getTodayKey();
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    raw[today] = (raw[today] || 0) + 1;
+    // Clean up old keys
+    Object.keys(raw).forEach(k => { if (k !== today) delete raw[k]; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+  } catch {}
+}
+
+function window.swiftpdf.isLimitReached(STORAGE_KEY, DAILY_LIMIT) {
+  return getMergeCount() >= DAILY_LIMIT;
+}
+
+// ── Drag & Drop on drop zone ───────────────────────────────────
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  addFiles([...e.dataTransfer.files].filter(f => f.type === 'application/pdf'));
+});
+
+fileInput.addEventListener('change', () => {
+  addFiles([...fileInput.files]);
+  fileInput.value = '';
+});
+
+addMoreInput.addEventListener('change', () => {
+  addFiles([...addMoreInput.files]);
+  addMoreInput.value = '';
+});
+
+// ── File management ────────────────────────────────────────────
+function addFiles(newFiles) {
+  if (!newFiles.length) return;
+  files = [...files, ...newFiles];
+  renderFileList();
+  showSection('list');
+}
+
+function removeFile(idx) {
+  files.splice(idx, 1);
+  if (files.length === 0) showSection('drop');
+  else renderFileList();
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(2) + ' MB';
+}
+
+function renderFileList() {
+  fileListEl.innerHTML = '';
+  fileCountBadge.textContent = files.length + (files.length === 1 ? ' File' : ' Files');
+
+  files.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.setAttribute('draggable', 'true');
+    item.dataset.index = i;
+    item.setAttribute('role', 'listitem');
+    item.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <span class="file-pdf-icon">📄</span>
+      <div class="file-info">
+        <div class="file-name" title="${escHtml(f.name)}">${escHtml(f.name)}</div>
+        <div class="file-size">${formatBytes(f.size)}</div>
+      </div>
+      <span class="file-order">#${i + 1}</span>
+      <button class="btn-delete" title="Remove file" aria-label="Remove ${escHtml(f.name)}">✕</button>
+    `;
+
+    // Delete
+    item.querySelector('.btn-delete').addEventListener('click', () => removeFile(i));
+
+    // Drag to reorder
+    item.addEventListener('dragstart', onDragStart);
+    item.addEventListener('dragover',  onDragOver);
+    item.addEventListener('dragleave', onDragLeave);
+    item.addEventListener('drop',      onDrop);
+    item.addEventListener('dragend',   onDragEnd);
+
+    fileListEl.appendChild(item);
+  });
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Reorder drag ───────────────────────────────────────────────
+let dragSrcIdx = null;
+
+function onDragStart(e) {
+  dragSrcIdx = +e.currentTarget.dataset.index;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-target');
+}
+function onDragLeave(e) {
+  e.currentTarget.classList.remove('drag-target');
+}
+function onDrop(e) {
+  e.stopPropagation();
+  const targetIdx = +e.currentTarget.dataset.index;
+  if (dragSrcIdx !== null && dragSrcIdx !== targetIdx) {
+    const moved = files.splice(dragSrcIdx, 1)[0];
+    files.splice(targetIdx, 0, moved);
+    renderFileList();
+  }
+}
+function onDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.file-item').forEach(el => el.classList.remove('drag-target'));
+  dragSrcIdx = null;
+}
+
+// ── UI state switches ──────────────────────────────────────────
+function showSection(state) {
+  dropZone.style.display        = state === 'drop'    ? '' : 'none';
+  fileListSec.style.display     = state === 'list'    ? '' : 'none';
+  loadingState.style.display    = state === 'loading' ? '' : 'none';
+  successState.style.display    = state === 'success' ? '' : 'none';
+}
+
+// ── Merge logic ────────────────────────────────────────────────
+btnMerge.addEventListener('click', async () => {
+  if (files.length < 2) {
+    alert('Please add at least 2 PDF files to merge.');
+    return;
+  }
+
+  if (window.swiftpdf.isLimitReached(STORAGE_KEY, DAILY_LIMIT)) {
+    window.swiftpdf.showFreemiumModal();
+    return;
+  }
+
+  showSection('loading');
+  btnMerge.disabled = true;
+
+  try {
+    const { PDFDocument } = PDFLib;
+    const merged = await PDFDocument.create();
+    let totalPages = 0;
+
+    for (const file of files) {
+      const bytes = await file.arrayBuffer();
+      const src   = await PDFDocument.load(bytes, { ignoreEncryption: true });
+      const indices = src.getPageIndices();
+      const copied = await merged.copyPages(src, indices);
+      copied.forEach(p => { merged.addPage(p); totalPages++; });
+    }
+
+    mergedBytes = await merged.save();
+    incrementMergeCount();
+
+    const remaining = DAILY_LIMIT - getMergeCount();
+    successDesc.textContent = `Your merged PDF (${totalPages} pages, ${formatBytes(mergedBytes.length)}) is ready. ${remaining} free merge${remaining !== 1 ? 's' : ''} remaining today.`;
+
+    showSection('success');
+  } catch (err) {
+    console.error(err);
+    showSection('list');
+    alert('Failed to merge PDFs. Please ensure all files are valid, non-encrypted PDFs and try again.\n\nError: ' + err.message);
+  } finally {
+    btnMerge.disabled = false;
+  }
+});
+
+// ── Download ───────────────────────────────────────────────────
+btnDownload.addEventListener('click', () => {
+  if (!mergedBytes) return;
+  const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'merged.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+});
+
+// ── Reset ──────────────────────────────────────────────────────
+btnReset.addEventListener('click', () => {
+  files = [];
+  mergedBytes = null;
+  fileListEl.innerHTML = '';
+  showSection('drop');
+});
+
+// ── Modal close ────────────────────────────────────────────────
+btnMaybe.addEventListener('click', () => modalOverlay.classList.remove('open'));
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+});
+
+// ── Init ───────────────────────────────────────────────────────
+showSection('drop');
+</script>
+</body>
+</html>

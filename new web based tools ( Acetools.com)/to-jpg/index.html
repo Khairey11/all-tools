@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF to JPG — Convert PDF Pages to Images Free | SwiftPDF</title>
+  <meta name="description" content="Convert PDF pages to JPG or PNG images instantly. Choose quality from 72 to 300 DPI. Free, browser-based — no upload needed." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- AdSense Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <!-- Shared JS Components -->
+  <script src="/js/shared.js" defer></script>
+</head>
+<body>
+
+<swift-header></swift-header>
+
+<!-- HERO -->
+<section class="tool-hero">
+  <div class="tool-breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/#tools">Tools</a> &rsaquo; PDF to JPG
+  </div>
+  <h1>🖼️ PDF to JPG</h1>
+  <p>Convert every PDF page into a high-quality JPG or PNG image. Choose your DPI and download instantly — no server needed.</p>
+</section>
+
+<!-- MAIN -->
+<main class="tool-wrap">
+
+  
+  <!-- Ad Placement 1: Top Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-bottom:2rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_1"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- Drop Zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".pdf" />
+    <span class="drop-icon">📤</span>
+    <h2>Drop your PDF here</h2>
+    <p>or click to browse from your device</p>
+    <span class="btn-choose">📂 Choose PDF</span>
+  </div>
+
+  
+  <!-- Ad Placement 2: Rectangle -->
+  <div class="ad-slot-rectangle" style="min-height:250px; text-align:center; margin: 2rem auto;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_2"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+<!-- File strip -->
+  <div class="file-strip" id="file-strip">
+    <span class="fs-icon">📄</span>
+    <div class="fs-info">
+      <div class="fs-name" id="fs-name">file.pdf</div>
+      <div class="fs-meta" id="fs-meta">—</div>
+    </div>
+    <span class="fs-badge" id="fs-badge">— pages</span>
+    <button class="btn-change" id="btn-change">↩ Change file</button>
+  </div>
+
+  <!-- Options -->
+  <div class="options-panel" id="options-panel">
+    <div class="opt-row">
+      <div class="opt-group">
+        <div class="opt-label">Output Format</div>
+        <div class="pill-group" id="fmt-group">
+          <button class="pill pill-fmt active" data-fmt="jpeg">JPG</button>
+          <button class="pill pill-fmt" data-fmt="png">PNG</button>
+        </div>
+      </div>
+      <div class="opt-group">
+        <div class="opt-label">Quality / DPI</div>
+        <div class="pill-group" id="dpi-group">
+          <button class="pill" data-dpi="72">72 DPI <span style="font-weight:400;font-size:.75em;opacity:.7">Web</span></button>
+          <button class="pill active" data-dpi="150">150 DPI <span style="font-weight:400;font-size:.75em;opacity:.7">Standard</span></button>
+          <button class="pill" data-dpi="300">300 DPI <span style="font-weight:400;font-size:.75em;opacity:.7">Print</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="convert-action">
+      <button class="btn-convert" id="btn-convert">🖼️ Convert to Images</button>
+      <span class="convert-hint">🔒 Files never leave your browser</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label" id="progress-label">Preparing...</div>
+    <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="progress-sub" id="progress-sub">Processing page 0 of 0</div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="results-section">
+    <div class="results-header">
+      <div>
+        <h3 id="results-title">Conversion Complete 🎉</h3>
+        <div class="sub" id="results-sub"></div>
+      </div>
+      <button class="btn-zip" id="btn-zip">📦 Download All as ZIP</button>
+    </div>
+    <div class="free-notice" id="free-notice">
+      ✨ <strong>Free plan:</strong> Showing first 3 pages. <a href="/pricing" style="color:inherit;text-decoration:underline;">Upgrade to Pro</a> to convert all pages.
+    </div>
+    <div class="thumb-grid" id="thumb-grid"></div>
+    <div class="results-reset">
+      <button class="btn-reset" id="btn-reset">🔄 Convert Another PDF</button>
+    </div>
+  </div>
+
+  <!-- Info cards -->
+  <div class="info-section">
+    <div class="info-card">
+      <span class="ic-icon">📐</span>
+      <h4>3 DPI Options</h4>
+      <p>72 DPI for web, 150 DPI for balanced quality, 300 DPI for crisp print output.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">🖼️</span>
+      <h4>JPG &amp; PNG</h4>
+      <p>Choose JPG for smaller files or PNG for lossless transparency support.</p>
+    </div>
+    <div class="info-card">
+      <span class="ic-icon">📦</span>
+      <h4>Download All</h4>
+      <p>Grab every page as a single ZIP or download pages individually.</p>
+    </div>
+  </div>
+
+  <!-- Ad Placement 3: Bottom Leaderboard -->
+  <div class="ad-slot-horizontal" style="min-height:90px; margin-top:3rem; text-align:center;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="AUTO_SLOT_3"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-icon">⭐</div>
+    <h2 id="modal-title">Upgrade to Convert All Pages</h2>
+    <p>The free plan converts the <strong>first 3 pages</strong> of your PDF. Upgrade to Pro to convert all pages at once without limits.</p>
+    <div class="pro-box">
+      <div class="pro-box-title">⚡ Pro Plan — $4.99/month</div>
+      <ul>
+        <li>✅ Convert all pages — no limit</li>
+        <li>✅ 300 DPI print-quality output</li>
+        <li>✅ Batch PDF processing</li>
+        <li>✅ All 9 PDF tools unlocked</li>
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <a href="/pricing" class="btn-upgrade">🚀 Upgrade Now — $4.99/month</a>
+      <button class="btn-maybe" id="btn-maybe">Convert first 3 pages only</button>
+    </div>
+  </div>
+</div>
+
+<swift-footer></swift-footer>
+
+<script>
+// ── PDF.js worker ──────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── State ──────────────────────────────────────────────────────
+const FREE_PAGE_LIMIT = 3;
+let currentFile  = null;
+let totalPages   = 0;
+let selectedFmt  = 'jpeg';  // 'jpeg' | 'png'
+let selectedDpi  = 150;     // 72 | 150 | 300
+let outputBlobs  = [];       // Array of { name, blob, url }
+let limitDismissed = false;  // user clicked "convert 3 pages" in modal
+
+// ── DOM ────────────────────────────────────────────────────────
+const dropZone      = document.getElementById('drop-zone');
+const fileInput     = document.getElementById('file-input');
+const fileStrip     = document.getElementById('file-strip');
+const fsName        = document.getElementById('fs-name');
+const fsMeta        = document.getElementById('fs-meta');
+const fsBadge       = document.getElementById('fs-badge');
+const btnChange     = document.getElementById('btn-change');
+const optionsPanel  = document.getElementById('options-panel');
+const btnConvert    = document.getElementById('btn-convert');
+const progressWrap  = document.getElementById('progress-wrap');
+const progressBar   = document.getElementById('progress-bar');
+const progressLabel = document.getElementById('progress-label');
+const progressSub   = document.getElementById('progress-sub');
+const resultsSection= document.getElementById('results-section');
+const resultsTitle  = document.getElementById('results-title');
+const resultsSub    = document.getElementById('results-sub');
+const freeNotice    = document.getElementById('free-notice');
+const thumbGrid     = document.getElementById('thumb-grid');
+const btnZip        = document.getElementById('btn-zip');
+const btnReset      = document.getElementById('btn-reset');
+
+// ── Format pills ───────────────────────────────────────────────
+document.querySelectorAll('#fmt-group .pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#fmt-group .pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedFmt = btn.dataset.fmt;
+  });
+});
+
+// ── DPI pills ──────────────────────────────────────────────────
+document.querySelectorAll('#dpi-group .pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#dpi-group .pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedDpi = parseInt(btn.dataset.dpi);
+  });
+});
+
+// ── Drop zone ──────────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = [...e.dataTransfer.files].find(f => f.type==='application/pdf');
+  if (f) loadFile(f); else alert('Please drop a PDF file.');
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+btnChange.addEventListener('click', resetTool);
+
+async function loadFile(file) {
+  currentFile = file;
+  limitDismissed = false;
+  fsName.textContent = file.name;
+  fsMeta.textContent = formatBytes(file.size);
+  fsBadge.textContent = 'Loading…';
+
+  dropZone.style.display   = 'none';
+  fileStrip.style.display  = 'flex';
+  optionsPanel.style.display = 'none';
+  progressWrap.style.display = 'none';
+  resultsSection.style.display = 'none';
+
+  try {
+    const ab  = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    totalPages = pdf.numPages;
+    fsMeta.textContent  = `${totalPages} page${totalPages!==1?'s':''}  ·  ${formatBytes(file.size)}`;
+    fsBadge.textContent = `${totalPages} page${totalPages!==1?'s':''}`;
+    optionsPanel.style.display = 'block';
+  } catch (e) {
+    alert('Could not read PDF: ' + e.message);
+    resetTool();
+  }
+}
+
+// ── Convert ────────────────────────────────────────────────────
+btnConvert.addEventListener('click', async () => {
+  if (!currentFile) return;
+
+  // If file has > FREE_PAGE_LIMIT pages and user hasn't dismissed, show modal
+  if (totalPages > FREE_PAGE_LIMIT && !limitDismissed) {
+    window.swiftpdf.showFreemiumModal();
+    return;
+  }
+
+  const pagesToConvert = limitDismissed
+    ? Math.min(totalPages, FREE_PAGE_LIMIT)
+    : totalPages; // if totalPages <= 3 just convert all
+
+  await runConversion(pagesToConvert);
+});
+
+btnMaybe.addEventListener('click', async () => {
+  modalOverlay.classList.remove('open');
+  limitDismissed = true;
+  const pagesToConvert = Math.min(totalPages, FREE_PAGE_LIMIT);
+  await runConversion(pagesToConvert);
+});
+
+async function runConversion(pagesToConvert) {
+  // Revoke old blob URLs
+  outputBlobs.forEach(o => URL.revokeObjectURL(o.url));
+  outputBlobs = [];
+
+  optionsPanel.style.display   = 'none';
+  fileStrip.style.display      = 'none';
+  progressWrap.style.display   = 'block';
+  resultsSection.style.display = 'none';
+  btnConvert.disabled          = true;
+  progressBar.style.width      = '0%';
+
+  const ext     = selectedFmt === 'jpeg' ? 'jpg' : 'png';
+  const mimeType = selectedFmt === 'jpeg' ? 'image/jpeg' : 'image/png';
+  const scale   = selectedDpi / 72; // PDF.js uses 72 DPI as base
+
+  try {
+    const ab  = await currentFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+
+    for (let i = 1; i <= pagesToConvert; i++) {
+      progressLabel.textContent = `Converting page ${i} of ${pagesToConvert}…`;
+      progressSub.textContent   = `Processing with ${selectedDpi} DPI`;
+      progressBar.style.width   = Math.round((i-1)/pagesToConvert*100) + '%';
+
+      const page   = await pdf.getPage(i);
+      const vp     = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(vp.width);
+      canvas.height = Math.round(vp.height);
+      const ctx    = canvas.getContext('2d');
+
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+      const quality = selectedFmt === 'jpeg' ? 0.92 : undefined;
+      const blob = await new Promise(res => canvas.toBlob(res, mimeType, quality));
+      const url  = URL.createObjectURL(blob);
+      const name = `page-${String(i).padStart(totalPages > 9 ? 2 : 1, '0')}.${ext}`;
+      outputBlobs.push({ name, blob, url });
+
+      progressBar.style.width = Math.round(i/pagesToConvert*100) + '%';
+      // Yield to browser
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    buildResults(pagesToConvert);
+  } catch (e) {
+    console.error(e);
+    alert('Conversion failed: ' + e.message);
+    optionsPanel.style.display  = 'block';
+    fileStrip.style.display     = 'flex';
+  } finally {
+    progressWrap.style.display = 'none';
+    btnConvert.disabled        = false;
+  }
+}
+
+function buildResults(pagesToConvert) {
+  thumbGrid.innerHTML = '';
+  const isLimited = totalPages > FREE_PAGE_LIMIT && limitDismissed;
+
+  resultsTitle.textContent = `Conversion Complete 🎉`;
+  resultsSub.textContent   = `${pagesToConvert} image${pagesToConvert!==1?'s':''} · ${selectedDpi} DPI · ${selectedFmt.toUpperCase()}`;
+  freeNotice.style.display = isLimited ? 'block' : 'none';
+
+  outputBlobs.forEach(({ name, url }, i) => {
+    const card = document.createElement('div');
+    card.className = 'thumb-card';
+    card.style.animationDelay = (i * 0.06) + 's';
+    card.innerHTML = `
+      <div class="thumb-img-wrap">
+        <img src="${url}" alt="Page ${i+1}" loading="lazy" />
+        <span class="thumb-page-badge">Page ${i+1}</span>
+      </div>
+      <div class="thumb-footer">
+        <span class="thumb-name">${escHtml(name)}</span>
+        <button class="btn-dl-thumb" data-idx="${i}">⬇️ Save</button>
+      </div>
+    `;
+    card.querySelector('.btn-dl-thumb').addEventListener('click', () => downloadOne(i));
+    thumbGrid.appendChild(card);
+  });
+
+  resultsSection.style.display = 'block';
+}
+
+// ── Download single ────────────────────────────────────────────
+function downloadOne(idx) {
+  const { name, url } = outputBlobs[idx];
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ── Download all ZIP ───────────────────────────────────────────
+btnZip.addEventListener('click', async () => {
+  if (!outputBlobs.length) return;
+  btnZip.textContent = '⏳ Zipping...';
+  btnZip.disabled = true;
+  try {
+    const zip  = new JSZip();
+    const folder = zip.folder('pdf-images');
+    for (const { name, blob } of outputBlobs) folder.file(name, blob);
+    const out  = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+    const url  = URL.createObjectURL(out);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: 'pdf-images.zip' });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch (e) { alert('ZIP failed: ' + e.message); }
+  finally { btnZip.textContent = '📦 Download All as ZIP'; btnZip.disabled = false; }
+});
+
+// ── Reset ──────────────────────────────────────────────────────
+btnReset.addEventListener('click', resetTool);
+function resetTool() {
+  outputBlobs.forEach(o => URL.revokeObjectURL(o.url));
+  outputBlobs     = [];
+  currentFile     = null;
+  totalPages      = 0;
+  limitDismissed  = false;
+  thumbGrid.innerHTML = '';
+  dropZone.style.display       = '';
+  fileStrip.style.display      = 'none';
+  optionsPanel.style.display   = 'none';
+  progressWrap.style.display   = 'none';
+  resultsSection.style.display = 'none';
+}
+
+// ── Modal close ────────────────────────────────────────────────
+modalOverlay.addEventListener('click', e => { if (e.target===modalOverlay) modalOverlay.classList.remove('open'); });
+
+// ── Helpers ────────────────────────────────────────────────────
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(2) + ' MB';
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+window.addEventListener('scroll', () => {
+  document.querySelector('header').style.boxShadow =
+    window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,.08)' : 'none';
+}, { passive: true });
+</script>
+</body>
+</html>
