@@ -1,8 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import {
     Image,
     FileText,
-    Video,
     Code,
     Search,
     Type,
@@ -65,16 +64,6 @@ export const tools: ToolGroup[] = [
             { name: 'Word to PDF', desc: 'Convert Word to portable PDF', path: '/pdf-tools/word-to-pdf', icon: <FileText className="w-4 h-4" /> },
             { name: 'PDF Editor', desc: 'Rotate, reorder & delete pages', path: '/pdf-tools/editor', icon: <FileText className="w-4 h-4" /> },
             { name: 'PDF to Image', desc: 'Convert pages to JPG/PNG', path: '/pdf-tools/to-image', icon: <FileImage className="w-4 h-4" /> },
-        ]
-    },
-    {
-        id: 'video-tools',
-        category: 'Video Tools',
-        icon: <Video className="w-6 h-6" />,
-        color: 'from-purple-500 to-pink-400',
-        items: [
-            { name: 'Video Compressor', desc: 'Optimize high-res videos', path: '/video-tools/compress', icon: <Zap className="w-4 h-4" /> },
-            { name: 'Video to GIF', desc: 'Convert clips to animations', path: '/video-tools/to-gif', icon: <Video className="w-4 h-4" /> },
         ]
     },
     {

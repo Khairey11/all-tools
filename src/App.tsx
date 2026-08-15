@@ -6,6 +6,8 @@ import { Home } from './pages/Home';
 import { CategoryTools } from './pages/CategoryTools';
 import { ImageCompressor } from './pages/image-tools/ImageCompressor';
 import { GifCompressor } from './pages/image-tools/GifCompressor';
+import { ImageResizer } from './pages/image-tools/ImageResizer';
+import { ImageFormatConverter } from './pages/image-tools/ImageFormatConverter';
 import { WatermarkAdder } from './pages/image-tools/WatermarkAdder';
 import { ColorPaletteExtractor } from './pages/image-tools/ColorPaletteExtractor';
 import { PdfCompressor } from './pages/pdf-tools/PdfCompressor';
@@ -45,8 +47,8 @@ function App() {
                         {/* Image Tools */}
                         <Route path="/image-tools/compress" element={<ImageCompressor />} />
                         <Route path="/image-tools/gif-compressor" element={<GifCompressor />} />
-                        <Route path="/image-tools/resize" element={<ImageCompressor />} />
-                        <Route path="/image-tools/png-to-jpg" element={<ImageCompressor />} />
+                        <Route path="/image-tools/resize" element={<ImageResizer />} />
+                        <Route path="/image-tools/png-to-jpg" element={<ImageFormatConverter />} />
                         <Route path="/image-tools/watermark-adder" element={<WatermarkAdder />} />
                         <Route path="/image-tools/palette" element={<ColorPaletteExtractor />} />
 
@@ -56,9 +58,6 @@ function App() {
                         <Route path="/pdf-tools/word-to-pdf" element={<WordToPdf />} />
                         <Route path="/pdf-tools/editor" element={<PdfEditor />} />
                         <Route path="/pdf-tools/to-image" element={<PdfToImage />} />
-
-                        {/* Video Tools - Placeholder for now */}
-                        <Route path="/video-tools/compress" element={<div className="text-center py-20 text-text-muted">Video tools coming soon...</div>} />
 
                         {/* Text Tools */}
                         <Route path="/text-tools/case" element={<TextCaseConverter />} />
