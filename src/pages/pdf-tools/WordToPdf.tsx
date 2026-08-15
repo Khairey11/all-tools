@@ -4,6 +4,138 @@ import { ArrowLeft, FileText, Download, Trash2, RefreshCw, FileType, CheckCircle
 import { DropZone } from '../../components/DropZone';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { formatFileSize } from '../../utils/format';
+import JSZip from 'jszip';
+
+interface DocxParagraph {
+    text: string;
+    isHeading: boolean;
+    isListItem: boolean;
+    isBold: boolean;
+}
+
+const X_AMP = '&' + 'amp;';
+const X_LT = '&' + 'lt;';
+const X_GT = '&' + 'gt;';
+const X_QUOT = '&' + 'quot;';
+const X_APOS = '&' + 'apos;';
+
+function xmlUnescape(s: string): string {
+    return s
+        .replace(new RegExp(X_LT, 'g'), '<')
+        .replace(new RegExp(X_GT, 'g'), '>')
+        .replace(new RegExp(X_QUOT, 'g'), '"')
+        .replace(new RegExp(X_APOS, 'g'), "'")
+        .replace(new RegExp(X_AMP, 'g'), '&');
+}
+
+/** Parse a .docx file (a ZIP of XML) into structured paragraphs. */
+async function parseDocx(file: File): Promise<DocxParagraph[]> {
+    const zip = await JSZip.loadAsync(file);
+    const docXml = zip.file('word/document.xml');
+    if (!docXml) {
+        throw new Error('This file is not a valid .docx document.');
+    }
+    const xml = await docXml.async('string');
+
+    const paragraphs: DocxParagraph[] = [];
+    // Split into <w:p ...> ... </w:p> blocks
+    const paraRegex = /<w:p[ >][\s\S]*?<\/w:p>/g;
+    const paraBlocks = xml.match(paraRegex) ?? [];
+
+    for (const block of paraBlocks) {
+        const isListItem = /<w:numPr>/.test(block);
+        const isHeading = /w:val="Heading(\d)"/.test(block);
+        const isBold = /<w:b\/>/.test(block) || /<w:b [^>]*\/>/.test(block);
+
+        // Extract text runs: <w:t>...</w:t> plus <w:tab/> and breaks
+        let text = '';
+        const runRegex = /<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:tab\s*\/>|<w:br\s*\/>/g;
+        let m: RegExpExecArray | null;
+        while ((m = runRegex.exec(block)) !== null) {
+            if (m[0].startsWith('<w:t')) {
+                text += xmlUnescape(m[1] ?? '');
+            } else if (m[0].startsWith('<w:tab')) {
+                text += '    ';
+            } else {
+                text += '\n';
+            }
+        }
+
+        if (text.trim().length > 0) {
+            paragraphs.push({ text, isHeading, isListItem, isBold });
+        }
+    }
+
+    if (paragraphs.length === 0) {
+        throw new Error('No readable text found in this document.');
+    }
+    return paragraphs;
+}
+
+/** Lay out parsed paragraphs into a real multi-page PDF. */
+async function docxToPdf(file: File): Promise<Blob> {
+    const paragraphs = await parseDocx(file);
+
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+
+    const PAGE_W = 595.28;
+    const PAGE_H = 841.89;
+    const MARGIN = 56.7; // 2cm
+    const CONTENT_W = PAGE_W - MARGIN * 2;
+
+    let page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    let y = PAGE_H - MARGIN;
+
+    const newPage = () => {
+        page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        y = PAGE_H - MARGIN;
+    };
+
+    for (const para of paragraphs) {
+        const bodySize = 11;
+        const headingSize = para.isHeading ? 16 : bodySize;
+        const useBold = para.isHeading || para.isBold;
+        const useFont = useBold ? boldFont : font;
+        const lineH = headingSize * 1.35;
+
+        // Word wrap with width measurement
+        const words = para.text.split(/\s+/);
+        const lines: string[] = [];
+        let current = para.isListItem ? '\u2022 ' : '';
+        for (const w of words) {
+            const candidate = current ? current + ' ' + w : w;
+            const width = useFont.widthOfTextAtSize(candidate, headingSize);
+            if (width > CONTENT_W && current) {
+                lines.push(current);
+                current = (para.isListItem ? '   ' : '') + w;
+            } else {
+                current = candidate;
+            }
+        }
+        if (current) lines.push(current);
+
+        // Paragraph spacing before
+        y -= para.isHeading ? lineH * 0.8 : lineH * 0.5;
+        if (y < MARGIN + lineH) newPage();
+
+        for (const line of lines) {
+            if (y < MARGIN + lineH) newPage();
+            page.drawText(line, {
+                x: MARGIN,
+                y: y - headingSize,
+                size: headingSize,
+                font: useFont,
+                color: rgb(0.1, 0.1, 0.1),
+            });
+            y -= lineH;
+        }
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    return new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
+}
 
 export const WordToPdf: React.FC = () => {
     const navigate = useNavigate();
@@ -23,51 +155,14 @@ export const WordToPdf: React.FC = () => {
         setFiles(prev => prev.map(f => f.id === id ? { ...f, isProcessing: true } : f));
 
         try {
-            // Simulate conversion time
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Create a new PDF document. In a full implementation, we'd parse the .docx
-            // Here we create a valid PDF that acts as the output.
-            const pdfDoc = await PDFDocument.create();
-            const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-            const page = pdfDoc.addPage();
-            const { height } = page.getSize();
-            const fontSize = 12;
-
-            page.drawText('Document Name: ' + file.name, {
-                x: 50,
-                y: height - 4 * fontSize,
-                size: fontSize + 4,
-                font: timesRomanFont,
-                color: rgb(0, 0, 0),
-            });
-
-            page.drawText('Original File Size: ' + formatFileSize(file.size), {
-                x: 50,
-                y: height - 6 * fontSize,
-                size: fontSize,
-                font: timesRomanFont,
-                color: rgb(0.3, 0.3, 0.3),
-            });
-
-            page.drawText('[Note: Full DOCX parsing and formatting retention requires server-side processing or heavy WASM modules. This PDF was generated locally as part of the conversion pipeline.]', {
-                x: 50,
-                y: height - 10 * fontSize,
-                size: 10,
-                font: timesRomanFont,
-                color: rgb(0.5, 0.5, 0.5),
-                maxWidth: 500,
-                lineHeight: 14
-            });
-
-            const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+            const blob = await docxToPdf(file);
 
             setFiles(prev => prev.map(f =>
                 f.id === id ? { ...f, resultBlob: blob, isProcessing: false } : f
             ));
         } catch (error) {
             console.error('Word to PDF conversion failed', error);
+            alert(error instanceof Error ? error.message : 'Conversion failed. Please try a standard .docx file.');
             setFiles(prev => prev.map(f => f.id === id ? { ...f, isProcessing: false } : f));
         }
     };
@@ -94,7 +189,6 @@ export const WordToPdf: React.FC = () => {
                             onFilesSelected={handleFilesSelected}
                             multiple={true}
                             accept={{
-                                'application/msword': ['.doc'],
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
                             }}
                         />
