@@ -28,6 +28,46 @@ function xmlUnescape(s: string): string {
         .replace(new RegExp(X_AMP, 'g'), '&');
 }
 
+// Characters outside WinAnsi (CP1252) crash pdf-lib standard fonts.
+// Map common Word/Unicode characters to safe equivalents first.
+const WIN_ANSI_MAP: Record<string, string> = {
+    '\u25E6': '-', '\u2023': '-', '\u25AA': '-', '\u25CF': '-',
+    '\u25A0': '-', '\u25AB': '-', '\u25CB': 'o',
+    '\u2192': '->', '\u2190': '<-', '\u2194': '<->',
+    '\u2713': '[ok]', '\u2717': '[x]',
+    '\u2605': '*', '\u2606': '*', '\u00A0': ' ', '\u2011': '-',
+    '\u2010': '-', '\uFEFF': '', '\u200B': '',
+};
+
+// All chars pdf-lib standard fonts can encode (ASCII, Latin-1, CP1252 extras).
+const CP1252_EXTRA = new Set([
+    0x20ac, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6,
+    0x2030, 0x0160, 0x2039, 0x0152, 0x017d, 0x2018, 0x2019, 0x201c,
+    0x201d, 0x2022, 0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a,
+    0x0153, 0x017e, 0x0178,
+]);
+
+function isWinAnsi(cp: number): boolean {
+    if (cp >= 0x20 && cp <= 0x7e) return true;
+    if (cp >= 0xa0 && cp <= 0xff) return true;
+    return CP1252_EXTRA.has(cp);
+}
+
+function sanitizeForWinAnsi(text: string): string {
+    let out = '';
+    for (const ch of text) {
+        const mapped = WIN_ANSI_MAP[ch];
+        if (mapped !== undefined) {
+            out += mapped;
+            continue;
+        }
+        const cp = ch.codePointAt(0) ?? 0;
+        if (isWinAnsi(cp)) out += ch;
+        // Characters that cannot be encoded are dropped (e.g. CJK, symbols).
+    }
+    return out.replace(/[ \t]{2,}/g, (m) => (m.includes('\t') ? '    ' : ' '));
+}
+
 /** Parse a .docx file (a ZIP of XML) into structured paragraphs. */
 async function parseDocx(file: File): Promise<DocxParagraph[]> {
     const zip = await JSZip.loadAsync(file);
@@ -100,8 +140,9 @@ async function docxToPdf(file: File): Promise<Blob> {
         const useFont = useBold ? boldFont : font;
         const lineH = headingSize * 1.35;
 
-        // Word wrap with width measurement
-        const words = para.text.split(/\s+/);
+        // Word wrap with width measurement (text is already WinAnsi-safe)
+        const words = sanitizeForWinAnsi(para.text).split(/\s+/).filter(Boolean);
+        if (words.length === 0) continue;
         const lines: string[] = [];
         let current = para.isListItem ? '\u2022 ' : '';
         for (const w of words) {
