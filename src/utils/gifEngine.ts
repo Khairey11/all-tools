@@ -421,15 +421,6 @@ function qualityScore(c: PassConfig): number {
     return 2.2 * c.scale + 0.6 * colorScore + losslessBonus;
 }
 
-function describePass(p: PassConfig): string {
-    const parts: string[] = [];
-    if (p.scale >= 0.995 && p.interval <= 1 && p.lossy === 0) return 'lossless re-encode';
-    if (p.scale < 1) parts.push(`${Math.round(p.scale * 100)}% size`);
-    if (p.interval > 1) parts.push(`${Math.round(100 / p.interval)}% frames`);
-    if (p.colors < 256) parts.push(`${p.colors} colors`);
-    if (p.lossy > 0) parts.push('lossy rounding');
-    return parts.length ? parts.join(' Â· ') : 're-encode';
-}
 
 const FLOOR_SCALE = 0.04;
 
@@ -502,10 +493,7 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
     const bestFit = (): PassOutcome | null => bestFitRef.current;
     const smallest = (): PassOutcome | null => smallestRef.current;
     const lastOutcome = (): PassOutcome => lastRef.current as PassOutcome;
-
-    let passIndex = 0;
     const runPass = async (cfg: PassConfig, progress: number): Promise<PassOutcome> => {
-        passIndex++;
         const scaled = getScaled(cfg.scale);
         // FRAME PRESERVATION: every frame is always encoded, with its exact
         // original delay. interval is kept in cfg for reporting only.
@@ -520,7 +508,7 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
                 onProgress: (p) =>
                     onProgress?.(
                         Math.min(97, progress + (p / 100) * 4),
-                        `Pass ${passIndex} â€” ${describePass(cfg)}`
+                        `Compressing GIF`
                     ),
             }
         );
@@ -591,18 +579,18 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
     /* ---- Phase 3: adaptive resolution ------------------------------ */
     // Estimate the scale that hits the target from real measurements
     // (GIF bytes scale ~linearly with pixels â†’ scale âˆ âˆšratio), then refine.
-    for (let k = 0; k < 5; k++) {
+    for (let k = 0; k < 10; k++) {
         const last = lastOutcome();
         const ratio = Math.max(0.004, targetBytes / last.bytes);
-        const margin = last.bytes > targetBytes ? 0.9 : 1.08; // undershoot when too big
+        const margin = last.bytes > targetBytes ? 0.82 : 1.05; // undershoot when too big
         const scale = clampScaleB(Math.max(bounds.minScale, clampScale(last.cfg.scale * Math.sqrt(ratio) * margin)));
         const cfg: PassConfig = {
             colors: 256,
             interval: 1,
             scale,
-            lossy: 0,
+            lossy: k >= 5 ? bounds.maxLossy : 0,
         };
-        const out = await runPass(cfg, 58 + k * 3);
+        const out = await runPass(cfg, 58 + k * 2);
         if (out.bytes <= targetBytes) break;
     }
 
@@ -610,7 +598,7 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
     // If we are well under the target we "wasted" quality â€” claw it back by
     // increasing resolution / colors while still fitting the target.
     const clawBack = async (): Promise<void> => {
-        for (let k = 0; k < 4; k++) {
+        for (let k = 0; k < 5; k++) {
             const fit = bestFit();
             if (!fit || fit.bytes > targetBytes * 0.8) return;
             const cfg: PassConfig = {
