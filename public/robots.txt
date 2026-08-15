@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://acetools.com/sitemap.xml
+Sitemap: https://all-tools-lake.vercel.app/sitemap.xml
