@@ -4,7 +4,10 @@ import { ArrowLeft, FileText, Download, Trash2, RefreshCw, FileType, CheckCircle
 import { DropZone } from '../../components/DropZone';
 import { formatFileSize } from '../../utils/format';
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import JSZip from 'jszip';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface DocxParagraph {
     text: string;
@@ -28,7 +31,6 @@ function xmlEscape(s: string): string {
 
 /** Extract text paragraphs from a PDF using pdf.js, page by page. */
 async function extractPdfParagraphs(file: File): Promise<DocxParagraph[]> {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
     const data = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data }).promise;
 
