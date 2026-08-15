@@ -54,13 +54,11 @@ for /f "tokens=5" %%p in ('netstat -aon ^| findstr ":5173 .*LISTENING"') do (
 )
 
 rem ---- 3. Start frontend (Vite) ----
-rem NOTE: /D sets the working directory - avoids nested-quote bugs with spaces in path
 echo.
-echo [1/2] Starting Frontend dev server...
-start "All Tools - Frontend (keep open)" /D "%ROOT%" cmd /k npm run dev
+echo [1/1] Starting App (all tools run 100% in your browser)...
+start "All Tools - App (keep open)" /D "%ROOT%" cmd /k npm run dev
 
 set "FRONTEND_OK=0"
-set "FRONTEND_PORT=5173"
 for /L %%i in (1,1,30) do (
     if "!FRONTEND_OK!"=="0" (
         timeout /t 2 /nobreak >nul
@@ -68,50 +66,29 @@ for /L %%i in (1,1,30) do (
     )
 )
 if "!FRONTEND_OK!"=="1" (
-    echo [OK] Frontend is UP at http://localhost:5173 >> "%LOG%"
-    echo [OK] Frontend is UP
+    echo [OK] App is UP at http://localhost:5173 >> "%LOG%"
+    echo [OK] App is UP
 ) else (
     color 0E
     echo [WARN] No response on 5173 after 60s.
     echo [WARN] no response on 5173 >> "%LOG%"
-    echo        Look at the frontend window - Vite prints its real URL there.
+    echo        Look at the app window - Vite prints its real URL there.
 )
 
-rem ---- 4. Start PDF backend (optional) ----
-echo.
-echo [2/2] Starting PDF backend (optional - PDF to Word tool)...
-where python >nul 2>&1
-if errorlevel 1 (
-    echo [SKIP] Python not found - PDF backend skipped.
-    echo [SKIP] python not found >> "%LOG%"
-) else (
-    if not exist "%ROOT%\pdf-backend\.venv" (
-        echo [INFO] Creating Python venv + installing requirements, first run...
-        python -m venv "%ROOT%\pdf-backend\.venv" >> "%LOG%" 2>&1
-        call "%ROOT%\pdf-backend\.venv\Scripts\activate.bat"
-        pip install -r "%ROOT%\pdf-backend\requirements.txt" >> "%LOG%" 2>&1
-    )
-    start "All Tools - PDF Backend (keep open)" /D "%ROOT%\pdf-backend" cmd /k .venv\Scripts\activate.bat ^&^& uvicorn main:app --host 127.0.0.1 --port 8000 --reload
-    echo [OK] Backend starting on http://localhost:8000 >> "%LOG%"
-    echo [OK] Backend starting on http://localhost:8000
-)
-
-rem ---- 5. Open browser ----
+rem ---- 4. Open browser ----
 echo.
 echo Opening http://127.0.0.1:5173 ...
 start "" http://127.0.0.1:5173
 
 echo.
 echo ===============================================
-echo   Frontend : http://localhost:5173
+echo   App      : http://localhost:5173
 echo              (also try http://127.0.0.1:5173)
-echo   Backend  : http://localhost:8000  (PDF tools)
+echo   No backend needed - every tool works
+echo   100% in the browser, fully offline.
 echo   Log file : %LOG%
-echo   Keep the server windows OPEN while working!
+echo   Keep the app window OPEN while working!
 echo ===============================================
-echo.
-echo If the page does not load: run TEST-PROJECT.bat
-echo and send me the report file it creates.
 echo.
 echo Press any key to close this launcher window...
 pause >nul
