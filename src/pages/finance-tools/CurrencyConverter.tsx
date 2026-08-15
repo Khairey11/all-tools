@@ -196,11 +196,70 @@ export const CurrencyConverter: React.FC = () => {
     const [fromCurrency, setFromCurrency] = useState('USD');
     const [toCurrency, setToCurrency] = useState('NPR'); // Default to NPR as requested
     const [result, setResult] = useState(0);
-    // 100% OFFLINE: built-in reference rates bundled with the app.
-    // No network request, no API, works with zero internet â€” conversion
-    // happens entirely on the user's device.
-    const [rates] = useState<Record<string, number>>(OFFLINE_USD_RATES);
+
+    // ---- Intelligent hybrid rate sourcing ---------------------------
+    // 1. LIVE   : fetch real-time rates when internet is available
+    // 2. CACHED : last successful live rates (localStorage, 24h validity)
+    // 3. OFFLINE: bundled reference table (always works, no internet)
+    // Conversion itself ALWAYS happens locally on the user's device.
+    const [rates, setRates] = useState<Record<string, number>>(() => {
+        try {
+            const cached = localStorage.getItem('fx_rates_cache');
+            if (cached) {
+                const parsed = JSON.parse(cached) as { ts: number; rates: Record<string, number> };
+                const ageHrs = (Date.now() - parsed.ts) / 3_600_000;
+                if (parsed.rates && ageHrs < 24) return parsed.rates;
+            }
+        } catch { /* fall through to offline table */ }
+        return OFFLINE_USD_RATES;
+    });
+    const [rateSource, setRateSource] = useState<'live' | 'cached' | 'offline'>('offline');
+    const [lastUpdated, setLastUpdated] = useState<string>('');
+    const [refreshing, setRefreshing] = useState(false);
     const [allCurrencies] = useState<Record<string, string>>(WORLD_CURRENCIES);
+
+    const fetchLiveRates = async () => {
+        setRefreshing(true);
+        try {
+            // 8s timeout so slow/hanging connections don't freeze the UI
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 8000);
+            const response = await fetch('https://open.er-api.com/v6/latest/USD', { signal: ctrl.signal });
+            clearTimeout(timer);
+            const data = await response.json();
+            if (data && data.rates && Object.keys(data.rates).length > 0) {
+                setRates(data.rates);
+                setRateSource('live');
+                setLastUpdated(new Date().toLocaleTimeString());
+                // cache for offline reuse
+                try {
+                    localStorage.setItem('fx_rates_cache', JSON.stringify({ ts: Date.now(), rates: data.rates }));
+                } catch { /* storage full/blocked — non-fatal */ }
+            }
+        } catch {
+            // No internet / API down — stay on current rates.
+            // If we still have the pure offline table, mark it clearly.
+            setRateSource((prev) => (prev === 'live' ? 'cached' : 'offline'));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+    // On mount: try live once (non-blocking). Cache/offline already in place.
+    useEffect(() => {
+        // If cache was used, show its age; then still try to refresh.
+        try {
+            const cached = localStorage.getItem('fx_rates_cache');
+            if (cached) {
+                const parsed = JSON.parse(cached) as { ts: number; rates: Record<string, number> };
+                if (parsed.rates) {
+                    setRateSource('cached');
+                    setLastUpdated(new Date(parsed.ts).toLocaleTimeString());
+                }
+            }
+        } catch { /* ignore */ }
+        void fetchLiveRates();
+    }, []);
 
     useEffect(() => {
         if (rates[fromCurrency] && rates[toCurrency]) {
@@ -306,15 +365,22 @@ export const CurrencyConverter: React.FC = () => {
                             </motion.div>
 
                             <div className="mt-16 flex flex-col md:flex-row items-center justify-center gap-6">
-                                <div className="flex items-center space-x-4 text-[10px] text-text-muted font-black uppercase tracking-widest bg-emerald-500/5 py-4 px-10 rounded-full border border-emerald-500/10 shadow-lg shadow-emerald-500/5 hover:bg-emerald-500/10 transition-all cursor-default">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-emerald-400/80">Live Exchange Feed</span>
+                                <button
+                                    onClick={fetchLiveRates}
+                                    disabled={refreshing}
+                                    title="Refresh live rates"
+                                    className="flex items-center space-x-4 text-[10px] text-text-muted font-black uppercase tracking-widest bg-emerald-500/5 py-4 px-10 rounded-full border border-emerald-500/10 shadow-lg shadow-emerald-500/5 hover:bg-emerald-500/10 transition-all disabled:opacity-60"
+                                >
+                                    <div className={`w-2 h-2 rounded-full animate-pulse ${rateSource === 'live' ? 'bg-emerald-500' : rateSource === 'cached' ? 'bg-amber-400' : 'bg-red-400'}`} />
+                                    <span className={rateSource === 'live' ? 'text-emerald-400/80' : rateSource === 'cached' ? 'text-amber-400/80' : 'text-red-400/80'}>
+                                        {refreshing ? 'Syncing…' : rateSource === 'live' ? 'Live Rates' : rateSource === 'cached' ? `Cached (saved ${lastUpdated})` : 'Offline Reference Rates'}
+                                    </span>
                                     <div className="w-1 h-1 bg-white/10 rounded-full" />
-                                    <span className="opacity-40 font-bold">Runs on Your Device</span>
-                                </div>
+                                    <span className="opacity-40 font-bold">{refreshing ? '' : '↻ Tap to refresh'}</span>
+                                </button>
                                 <div className="flex items-center space-x-3 text-[10px] text-text-muted font-black uppercase tracking-[0.2em] bg-primary/5 py-4 px-10 rounded-full border border-primary/10 hover:bg-primary/10 transition-all">
                                     <TrendingUp className="w-4 h-4 text-primary" />
-                                    <span>Global Market Access (160+ Countries)</span>
+                                    <span>Smart Fallback: Live → Cached → Offline</span>
                                 </div>
                             </div>
                         </div>
