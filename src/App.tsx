@@ -34,6 +34,20 @@ import { DateDifference } from './pages/unit-tools/DateDifference';
 import { TimeZoneConverter } from './pages/unit-tools/TimeZoneConverter';
 import { UnitConverter } from './pages/unit-tools/UnitConverter';
 import { SpeedConverter } from './pages/unit-tools/SpeedConverter';
+import { NepaliDateConverter } from './pages/unit-tools/NepaliDateConverter';
+import { VideoCompressor } from './pages/video-tools/VideoCompressor';
+import { VideoToGif } from './pages/video-tools/VideoToGif';
+import { WordCounter } from './pages/text-tools/WordCounter';
+import { LoremIpsum } from './pages/text-tools/LoremIpsum';
+import { PasswordGenerator } from './pages/dev-tools/PasswordGenerator';
+import { HashGenerator } from './pages/dev-tools/HashGenerator';
+import { QrGenerator } from './pages/generator-tools/QrGenerator';
+import { TipCalculator } from './pages/finance-tools/TipCalculator';
+import { DiscountCalculator } from './pages/finance-tools/DiscountCalculator';
+import { CalorieCalculator } from './pages/health-tools/CalorieCalculator';
+import { WaterIntake } from './pages/health-tools/WaterIntake';
+import { SleepCycle } from './pages/health-tools/SleepCycle';
+import { PomodoroTimer } from './pages/productivity-tools/PomodoroTimer';
 
 function App() {
     return (
@@ -52,6 +66,21 @@ function App() {
                         <Route path="/image-tools/watermark-adder" element={<WatermarkAdder />} />
                         <Route path="/image-tools/palette" element={<ColorPaletteExtractor />} />
 
+                        {/* Video Tools */}
+                        <Route path="/video-tools/compress" element={<VideoCompressor />} />
+                        <Route path="/video-tools/to-gif" element={<VideoToGif />} />
+
+                        {/* Generator Tools */}
+                        <Route path="/generator-tools/qr" element={<QrGenerator />} />
+
+                        {/* Health Tools */}
+                        <Route path="/health-tools/calorie" element={<CalorieCalculator />} />
+                        <Route path="/health-tools/water" element={<WaterIntake />} />
+                        <Route path="/health-tools/sleep" element={<SleepCycle />} />
+
+                        {/* Productivity Tools */}
+                        <Route path="/productivity-tools/pomodoro" element={<PomodoroTimer />} />
+
                         {/* PDF Tools */}
                         <Route path="/pdf-tools/compress" element={<PdfCompressor />} />
                         <Route path="/pdf-tools/pdf-to-word" element={<WordConverter />} />
@@ -61,12 +90,16 @@ function App() {
 
                         {/* Text Tools */}
                         <Route path="/text-tools/case" element={<TextCaseConverter />} />
+                        <Route path="/text-tools/word-count" element={<WordCounter />} />
+                        <Route path="/text-tools/lorem" element={<LoremIpsum />} />
 
                         {/* Dev Tools */}
                         <Route path="/dev-tools/password-strength" element={<PasswordStrength />} />
                         <Route path="/dev-tools/json" element={<JsonFormatter />} />
                         <Route path="/dev-tools/base64" element={<Base64Converter />} />
                         <Route path="/dev-tools/color" element={<ColorConverter />} />
+                        <Route path="/dev-tools/password-generator" element={<PasswordGenerator />} />
+                        <Route path="/dev-tools/hash" element={<HashGenerator />} />
 
                         {/* SEO Tools */}
                         <Route path="/seo-tools/meta" element={<MetaTagGenerator />} />
@@ -81,6 +114,8 @@ function App() {
                         <Route path="/finance-tools/interest" element={<InterestCalculator />} />
                         <Route path="/finance-tools/emi" element={<EmiCalculator />} />
                         <Route path="/finance-tools/currency" element={<CurrencyConverter />} />
+                        <Route path="/finance-tools/tip" element={<TipCalculator />} />
+                        <Route path="/finance-tools/discount" element={<DiscountCalculator />} />
 
                         {/* Unit & Time Tools */}
                         <Route path="/unit-tools/age" element={<AgeCalculator />} />
@@ -89,6 +124,7 @@ function App() {
                         <Route path="/unit-tools/timezone" element={<TimeZoneConverter />} />
                         <Route path="/unit-tools/units" element={<UnitConverter />} />
                         <Route path="/unit-tools/speed" element={<SpeedConverter />} />
+                        <Route path="/unit-tools/nepali-date" element={<NepaliDateConverter />} />
 
                         {/* 404 */}
                         <Route path="*" element={<div className="text-center py-20 text-text-muted text-xl font-bold">404 - Page not found</div>} />
