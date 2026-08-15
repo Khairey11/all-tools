@@ -45,7 +45,7 @@ export const GifCompressor = () => {
  const [jobs, setJobs] = useState<GifJob[]>([]);
  const [mode, setMode] = useState<Mode>('target');
  const [targetBytes, setTargetBytes] = useState(1024 * 1024);
- const [manualColors, setManualColors] = useState(192);
+ const [manualColors] = useState(256);
  const [manualScale, setManualScale] = useState(1); // 1 = original
  const [manualLossy, setManualLossy] = useState(60);
  const [strength, setStrength] = useState<GifStrength>('balanced');
@@ -458,7 +458,7 @@ export const GifCompressor = () => {
    ))}
   </div>
   <p className="text-xs text-text-muted">
-   Quality floor: {strength === 'light' ? 'at least 160 colors and 90% resolution' : strength === 'balanced' ? 'at least 96 colors and 50% resolution' : strength === 'strong' ? 'at least 48 colors and 20% resolution' : 'no floor - smallest possible'}. Every frame is always kept.
+   Colors are always kept at the full 256-color GIF maximum with per-frame palettes - never downgraded. Strength only controls the resolution floor. Every frame is always kept.
   </p>
  </div> </div>
  <input
@@ -480,22 +480,6 @@ export const GifCompressor = () => {
 
  {mode === 'manual' && (
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
- <div className="space-y-2">
- <div className="flex justify-between text-sm">
- <span className="text-text-muted">Max colors</span>
- <span className="text-text font-mono text-xs bg-white/5 px-2 py-1 rounded">{manualColors}</span>
- </div>
- <input
- type="range" min={8} max={256} step={8}
- value={manualColors}
- onChange={(e) => setManualColors(Number(e.target.value))}
- className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
- />
- <div className="flex justify-between text-xs text-text-muted/40">
- <span>8</span><span>256</span>
- </div>
- </div>
-
  <div className="space-y-2">
  <div className="flex justify-between text-sm">
  <span className="text-text-muted">Resolution</span>

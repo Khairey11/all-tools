@@ -213,68 +213,12 @@ export function scaleFrames(
 /* Encoding                                                            */
 /* ------------------------------------------------------------------ */
 
-const MAX_SAMPLE_PIXELS = 800_000;
-const MAX_PALETTE_SAMPLE_FRAMES = 64;
 
 function roundRgbFromLossy(lossy: number): number {
     // lossy = 0 â†’ step 1 â†’ roundStep() is a no-op â†’ visually lossless.
     return Math.max(1, Math.min(16, 1 + Math.floor(lossy / 25)));
 }
 
-function buildGlobalPalette(
-    frames: GifFrameData[],
-    width: number,
-    height: number,
-    maxColors: number,
-    roundRGB: number,
-    hasTransparency: boolean
-): { palette: number[][]; transparentIndex: number } {
-    const frameStride = Math.max(1, Math.ceil(frames.length / MAX_PALETTE_SAMPLE_FRAMES));
-    const sampledFrameCount = Math.ceil(frames.length / frameStride);
-    const totalPixels = width * height * sampledFrameCount;
-    const pixelStride = Math.max(1, Math.floor(Math.sqrt(totalPixels / MAX_SAMPLE_PIXELS)));
-
-    const sample = new Uint8Array(Math.min(totalPixels, MAX_SAMPLE_PIXELS) * 4 + 4);
-    let n = 0;
-    for (let fi = 0; fi < frames.length; fi += frameStride) {
-        const d = frames[fi].data;
-        for (let p = 0; p < d.length && n + 4 <= sample.length; p += 4 * pixelStride) {
-            sample[n++] = d[p];
-            sample[n++] = d[p + 1];
-            sample[n++] = d[p + 2];
-            sample[n++] = d[p + 3];
-        }
-    }
-    const view = sample.subarray(0, n);
-
-    prequantize(view, {
-        roundRGB,
-        roundAlpha: hasTransparency ? 10 : 0,
-        oneBitAlpha: hasTransparency ? 127 : null,
-    });
-
-    const colors = Math.max(8, Math.min(256, Math.round(maxColors)));
-    const palette = quantize(
-        view,
-        colors,
-        hasTransparency ? { format: 'rgba4444', oneBitAlpha: true } : { format: 'rgb565' }
-    );
-
-    let transparentIndex = -1;
-    if (hasTransparency) {
-        transparentIndex = palette.findIndex((c) => c[3] === 0);
-        if (transparentIndex === -1) {
-            if (palette.length < 256) {
-                palette.push([0, 0, 0, 0]);
-            } else {
-                palette[palette.length - 1] = [0, 0, 0, 0];
-            }
-            transparentIndex = palette.length - 1;
-        }
-    }
-
-    return { palette, transparentIndex };
-}
 
 export interface EncodeOptions {
     colors: number;
@@ -290,23 +234,63 @@ export async function encodeFrames(
     hasTransparency: boolean,
     opts: EncodeOptions
 ): Promise<Uint8Array> {
-    const { palette, transparentIndex } = buildGlobalPalette(
-        frames,
-        width,
-        height,
-        opts.colors,
-        roundRgbFromLossy(opts.lossy ?? 0),
-        hasTransparency
-    );
-
+    // MODERN COLOR-PRESERVING ENCODE
+    // Every frame gets its OWN full 256-color LOCAL palette quantized from
+    // that frame's own pixels. Colors are never reduced below the GIF maximum
+    // and never averaged across frames - no global-palette banding/shifts.
     const format: 'rgb565' | 'rgba4444' = hasTransparency ? 'rgba4444' : 'rgb565';
+    const roundRGB = roundRgbFromLossy(opts.lossy ?? 0);
     const gif = GIFEncoder();
-    const colorDepth = Math.max(2, Math.min(8, Math.ceil(Math.log2(Math.max(2, palette.length)))));
 
-    for (let i = 0; i < frames.length; i++) {
-        const frame = frames[i];
-        const index = applyPalette(frame.data, palette, format);
-        const delayMs = Math.max(10, Math.round(frame.delayMs / 10) * 10);
+    // Decimated sampling keeps per-frame quantization fast on large frames.
+    const PALETTE_SAMPLES = 24_000;
+    const framePixels = Math.max(1, width * height);
+    const stride = Math.max(1, Math.floor(Math.sqrt(framePixels / PALETTE_SAMPLES)));
+
+    for (let fi = 0; fi < frames.length; fi++) {
+        const d = frames[fi].data;
+
+        // Sample this frame for palette quantization.
+        const sampleArr = new Uint8Array(PALETTE_SAMPLES * 4 + 4);
+        let n = 0;
+        for (let p = 0; p + 3 < d.length && n + 4 <= sampleArr.length; p += 4 * stride * stride) {
+            sampleArr[n++] = d[p];
+            sampleArr[n++] = d[p + 1];
+            sampleArr[n++] = d[p + 2];
+            sampleArr[n++] = d[p + 3];
+        }
+        const view = sampleArr.subarray(0, n);
+        if (roundRGB > 1) {
+            prequantize(view, {
+                roundRGB,
+                roundAlpha: hasTransparency ? 10 : 0,
+                oneBitAlpha: hasTransparency ? 127 : null,
+            });
+        }
+
+        // Full 256-color palette for THIS frame - never fewer.
+        const palette = quantize(
+            view,
+            256,
+            hasTransparency ? { format: 'rgba4444', oneBitAlpha: true } : { format: 'rgb565' }
+        );
+
+        let transparentIndex = -1;
+        if (hasTransparency) {
+            transparentIndex = palette.findIndex((col) => col[3] === 0);
+            if (transparentIndex === -1) {
+                if (palette.length < 256) {
+                    palette.push([0, 0, 0, 0]);
+                } else {
+                    palette[palette.length - 1] = [0, 0, 0, 0];
+                }
+                transparentIndex = palette.length - 1;
+            }
+        }
+
+        const index = applyPalette(d, palette, format);
+        const delayMs = Math.max(10, Math.round(frames[fi].delayMs / 10) * 10);
+        const colorDepth = Math.max(2, Math.min(8, Math.ceil(Math.log2(Math.max(2, palette.length)))));
 
         const frameOpts: {
             delay: number;
@@ -320,9 +304,9 @@ export async function encodeFrames(
             delay: delayMs,
             colorDepth,
             dispose: hasTransparency ? 2 : -1,
+            palette, // LOCAL per-frame palette = exact colors per frame
         };
-        if (i === 0) {
-            frameOpts.palette = palette;
+        if (fi === 0) {
             frameOpts.repeat = 0; // loop forever
         }
         if (hasTransparency) {
@@ -331,8 +315,8 @@ export async function encodeFrames(
         }
 
         gif.writeFrame(index, width, height, frameOpts);
-        opts.onProgress?.(Math.round(((i + 1) / frames.length) * 100));
-        if (i % 8 === 7) await sleep();
+        opts.onProgress?.(Math.round(((fi + 1) / frames.length) * 100));
+        if (fi % 8 === 7) await sleep();
     }
 
     gif.finish();
@@ -388,13 +372,13 @@ export async function compressGifManual(
         scaled.height,
         decoded.hasTransparency,
         {
-            colors: options.colors ?? 256,
+            colors: 256,
             lossy: options.lossy ?? 0,
             onProgress: (p) => onProgress?.(32 + p * 0.66, 'Encoding framesâ€¦'),
         }
     );
 
-    const usedColors = Math.max(8, Math.min(256, options.colors ?? 256));
+    const usedColors = 256;
 
     onProgress?.(100, 'Done');
     return {
@@ -457,11 +441,11 @@ function clampScale(s: number): number {
 export type GifStrength = 'light' | 'balanced' | 'strong' | 'extreme';
 
 /** Quality floors per strength - the target compressor never degrades below these. */
-const STRENGTH_BOUNDS: Record<GifStrength, { minColors: number; minScale: number; maxLossy: number }> = {
-    light: { minColors: 160, minScale: 0.9, maxLossy: 0 },
-    balanced: { minColors: 96, minScale: 0.5, maxLossy: 25 },
-    strong: { minColors: 48, minScale: 0.2, maxLossy: 80 },
-    extreme: { minColors: 16, minScale: FLOOR_SCALE, maxLossy: 160 },
+const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number }> = {
+    light: { minScale: 0.9, maxLossy: 0 },
+    balanced: { minScale: 0.5, maxLossy: 25 },
+    strong: { minScale: 0.2, maxLossy: 80 },
+    extreme: { minScale: FLOOR_SCALE, maxLossy: 160 },
 };export async function compressGifToSize(
     file: File,
     targetBytes: number,
@@ -581,10 +565,10 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minColors: number; minScale: number
     /* ---- Phase 1: color ladder (frames untouched) ------------------- */
     // Color reduction down to ~96 colors is essentially invisible on
     // real-world content.
-    const colorLadder = [192, 160, 128, 96, 64, 32].filter((cl) => cl >= bounds.minColors);
+    const colorLadder = [256]; // colors are NEVER reduced
     for (let i = 0; i < colorLadder.length; i++) {
         const out = await runPass(
-            { colors: colorLadder[i], interval: 1, scale: 1, lossy: 0 },
+            { colors: 256, interval: 1, scale: 1, lossy: 0 },
             20 + i * 3
         );
         if (out.bytes <= targetBytes) break;
@@ -613,7 +597,7 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minColors: number; minScale: number
         const margin = last.bytes > targetBytes ? 0.9 : 1.08; // undershoot when too big
         const scale = clampScaleB(Math.max(bounds.minScale, clampScale(last.cfg.scale * Math.sqrt(ratio) * margin)));
         const cfg: PassConfig = {
-            colors: Math.max(64, Math.min(128, last.cfg.colors)),
+            colors: 256,
             interval: 1,
             scale,
             lossy: 0,
@@ -630,7 +614,7 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minColors: number; minScale: number
             const fit = bestFit();
             if (!fit || fit.bytes > targetBytes * 0.8) return;
             const cfg: PassConfig = {
-                colors: Math.min(256, Math.max(fit.cfg.colors, 160)),
+                colors: 256,
                 interval: 1,
                 scale: clampScaleB(fit.cfg.scale * 1.2),
                 lossy: 0,
@@ -660,8 +644,8 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minColors: number; minScale: number
     /* ---- Phase 4: last resort -------------------------------------- */
     // Extreme targets only: aggressive thinning + lossy rounding + scale.
     const floorSteps: PassConfig[] = [
-        { colors: Math.max(bounds.minColors, 48), interval: 1, scale: clampScaleB((smallest()?.cfg.scale ?? 1) * 0.7), lossy: Math.min(bounds.maxLossy, 30) },
-        { colors: bounds.minColors, interval: 1, scale: bounds.minScale, lossy: bounds.maxLossy },
+        { colors: 256, interval: 1, scale: clampScaleB((smallest()?.cfg.scale ?? 1) * 0.7), lossy: Math.min(bounds.maxLossy, 30) },
+        { colors: 256, interval: 1, scale: bounds.minScale, lossy: bounds.maxLossy },
     ];
     for (let i = 0; i < floorSteps.length; i++) {
         const out = await runPass(floorSteps[i], 88 + i * 3);
