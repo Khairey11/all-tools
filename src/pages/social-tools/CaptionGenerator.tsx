@@ -82,7 +82,7 @@ const generateNativeCaption = (platform: string, rawPrompt: string, brand: strin
     };
 
     // 2. High-Relevance Composition with Brand Awareness
-    let captions: string[] = [];
+    let captions: string[];
     const baseHook = mixin ? mixin.hook : '';
     const scenarioVibe = mixin ? mixin.vibes[seed % mixin.vibes.length] : f(1);
 

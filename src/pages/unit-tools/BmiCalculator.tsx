@@ -18,8 +18,8 @@ export const BmiCalculator: React.FC = () => {
         if (!wVal) return;
 
         const weightKg = weightUnit === 'kg' ? wVal : wVal * 0.453592;
-        let heightM = 0;
 
+        let heightM: number;
         if (heightUnit === 'cm') {
             const hVal = Number(height);
             if (!hVal) return;
@@ -33,9 +33,8 @@ export const BmiCalculator: React.FC = () => {
 
         const bmi = weightKg / (heightM * heightM);
 
-        let category = '';
-        let color = '';
-
+        let category: string;
+        let color: string;
         if (bmi < 18.5) {
             category = 'Underweight';
             color = 'text-blue-400';

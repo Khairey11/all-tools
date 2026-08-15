@@ -39,7 +39,7 @@ export const TimeZoneConverter: React.FC = () => {
                 hour12: true
             });
             setConvertedTime(targetTimeStr);
-        } catch (e) {
+        } catch {
             setConvertedTime('Invalid input');
         }
     }, [sourceTime, targetZone]);

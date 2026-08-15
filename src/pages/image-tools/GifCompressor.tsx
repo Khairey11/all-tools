@@ -273,7 +273,6 @@ export const GifCompressor = () => {
         }, 500);
 
         return () => clearTimeout(t);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settingsKey]);
 
     const downloadAll = () => {

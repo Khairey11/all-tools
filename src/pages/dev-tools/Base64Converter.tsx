@@ -18,7 +18,7 @@ export const Base64Converter: React.FC = () => {
     const encode = () => {
         try {
             setBase64Text(btoa(normalText));
-        } catch (e) {
+        } catch {
             setBase64Text('Invalid input for encoding');
         }
     };
@@ -26,7 +26,7 @@ export const Base64Converter: React.FC = () => {
     const decode = () => {
         try {
             setNormalText(atob(base64Text));
-        } catch (e) {
+        } catch {
             setNormalText('Invalid Base64 string');
         }
     };

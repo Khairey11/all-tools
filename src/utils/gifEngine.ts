@@ -76,7 +76,6 @@ export async function decodeGifFile(file: File, onProgress?: GifProgressFn): Pro
     }
 
     const buffer = await file.arrayBuffer();
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     const decoder = new (window as any).ImageDecoder({ data: buffer, type: 'image/gif' });
 
     interface RawFrame {
@@ -85,9 +84,9 @@ export async function decodeGifFile(file: File, onProgress?: GifProgressFn): Pro
         durationUs: number;
     }
     const raw: RawFrame[] = [];
-    let width = 0;
-    let height = 0;
-    let frameCountTotal = 0;
+    let width: number;
+    let height: number;
+    let frameCountTotal: number;
     let hasTransparency = false;
 
     try {
@@ -147,8 +146,6 @@ export async function decodeGifFile(file: File, onProgress?: GifProgressFn): Pro
             /* ignore */
         }
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-
     const frames: GifFrameData[] = raw.map((f, i) => {
         let ms = f.durationUs / 1000;
         if (!(ms > 0) && i + 1 < raw.length) {
@@ -340,8 +337,15 @@ export async function encodeFrames(
         const index = applyPalette(frame.data, palette, format);
         const delayMs = Math.max(10, Math.round(frame.delayMs / 10) * 10);
 
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const frameOpts: any = {
+        const frameOpts: {
+            delay: number;
+            colorDepth: number;
+            dispose: number;
+            palette?: number[][];
+            repeat?: number;
+            transparent?: boolean;
+            transparentIndex?: number;
+        } = {
             delay: delayMs,
             colorDepth,
             dispose: hasTransparency ? 2 : -1,
