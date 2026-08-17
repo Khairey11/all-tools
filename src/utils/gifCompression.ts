@@ -12,18 +12,16 @@ export type { GifCompressResult } from './gifEngine';
 
 export interface GifCompressionOptions {
     lossy?: number; // 1-200, higher = more compression but lower quality
-    colors?: number; // Max colors (8-256)
-    resize?: { width: number; height: number };
-    /** target frame rate; 0 (or undefined) = keep original timing */
+    colors?: number; // kept for API compatibility; engine always uses 256
+    resize?: { width: number; height: number }; // ignored - dimensions never change
+    /** kept for API compatibility; frame timing is always preserved */
     fps?: number;
-    /** relative size, 1 = original */
-    scale?: number;
 }
 
 export const defaultGifOptions: GifCompressionOptions = {
     lossy: 60,
-    colors: 192,
-    fps: 0, // 0 = keep original frame rate
+    colors: 256,
+    fps: 0,
 };
 
 export async function compressGif(
@@ -31,12 +29,10 @@ export async function compressGif(
     options: GifCompressionOptions = defaultGifOptions,
     onProgress?: (progress: number) => void
 ): Promise<File> {
+    // Dimensions are never changed - only lossy color rounding compresses.
     const engineOptions: GifManualOptions = {
-        colors: options.colors,
-        fps: options.fps && options.fps > 0 ? options.fps : 0,
+        colors: 256,
         lossy: options.lossy,
-        scale: options.scale,
-        targetWidth: options.resize?.width,
     };
 
     const result = await compressGifManual(file, engineOptions, {

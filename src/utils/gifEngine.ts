@@ -1,16 +1,14 @@
 ﻿/**
- * gifEngine.ts â€” real animated GIF compression, 100% in the browser.
+ * gifEngine.ts - real animated GIF compression, 100% in the browser.
  *
  * Decoding : WebCodecs ImageDecoder (Chrome / Edge 94+)
- * Encoding : gifenc (global-palette quantization + LZW)
+ * Encoding : gifenc (per-frame palette quantization + LZW)
  *
- * Quality-first philosophy â€” EVERY FRAME IS ALWAYS KEPT:
- *   0. Lossless re-encode (global palette + LZW only) â€” often enough alone
- *   1. Color reduction (essentially invisible down to ~128 colors)
- *   2. Resolution (most visible â€” only as much as mathematically needed,
- *      then refined upward to use the remaining size budget)
- * Frames, their order and their timing are NEVER altered â€” the animation
- * plays back exactly like the original.
+ * DIMENSIONS ARE NEVER CHANGED - width & height always stay identical
+ * to the source. Compression levers are ONLY:
+ *   0. Lossless re-encode (palette + LZW) - often enough on its own
+ *   1. Adaptive lossy color rounding (coarser quantization steps)
+ * Frame count, frame order, timing and resolution are NEVER altered.
  */
 import { GIFEncoder, quantize, applyPalette, prequantize } from 'gifenc';
 
@@ -166,59 +164,13 @@ export async function decodeGifFile(file: File, onProgress?: GifProgressFn): Pro
 }
 
 /* ------------------------------------------------------------------ */
-/* Frame transforms                                                    */
-/* ------------------------------------------------------------------ */
-
-export function scaleFrames(
-    frames: GifFrameData[],
-    width: number,
-    height: number,
-    scale: number
-): { frames: GifFrameData[]; width: number; height: number } {
-    if (scale >= 0.995) return { frames, width, height };
-
-    const w = Math.max(1, Math.round(width * scale));
-    const h = Math.max(1, Math.round(height * scale));
-
-    const src = document.createElement('canvas');
-    src.width = width;
-    src.height = height;
-    const srcCtx = src.getContext('2d');
-
-    const dst = document.createElement('canvas');
-    dst.width = w;
-    dst.height = h;
-    const dstCtx = dst.getContext('2d', { willReadFrequently: true });
-
-    if (!srcCtx || !dstCtx) throw new Error('Could not acquire 2D canvas contexts.');
-
-    dstCtx.imageSmoothingEnabled = true;
-    dstCtx.imageSmoothingQuality = 'high';
-
-    const scaled: GifFrameData[] = frames.map((f) => {
-        srcCtx.putImageData(
-            new ImageData(f.data as unknown as Uint8ClampedArray<ArrayBuffer>, width, height),
-            0,
-            0
-        );
-        dstCtx.clearRect(0, 0, w, h);
-        dstCtx.drawImage(src, 0, 0, w, h);
-        return { data: dstCtx.getImageData(0, 0, w, h).data, delayMs: f.delayMs };
-    });
-
-    return { frames: scaled, width: w, height: h };
-}
-
-/* ------------------------------------------------------------------ */
 /* Encoding                                                            */
 /* ------------------------------------------------------------------ */
 
-
 function roundRgbFromLossy(lossy: number): number {
-    // lossy = 0 â†’ step 1 â†’ roundStep() is a no-op â†’ visually lossless.
+    // lossy = 0 -> step 1 -> roundStep() is a no-op -> visually lossless.
     return Math.max(1, Math.min(16, 1 + Math.floor(lossy / 25)));
 }
-
 
 export interface EncodeOptions {
     colors: number;
@@ -234,10 +186,8 @@ export async function encodeFrames(
     hasTransparency: boolean,
     opts: EncodeOptions
 ): Promise<Uint8Array> {
-    // MODERN COLOR-PRESERVING ENCODE
     // Every frame gets its OWN full 256-color LOCAL palette quantized from
-    // that frame's own pixels. Colors are never reduced below the GIF maximum
-    // and never averaged across frames - no global-palette banding/shifts.
+    // that frame's own pixels - no cross-frame banding or color shifts.
     const format: 'rgb565' | 'rgba4444' = hasTransparency ? 'rgba4444' : 'rgb565';
     const roundRGB = roundRgbFromLossy(opts.lossy ?? 0);
     const gif = GIFEncoder();
@@ -331,9 +281,6 @@ export interface GifManualOptions {
     colors?: number;
     fps?: number;
     lossy?: number;
-    scale?: number;
-    /** absolute pixel width â€” wins over `scale` */
-    targetWidth?: number;
 }
 
 function makeResultFile(file: File, bytes: Uint8Array): File {
@@ -348,60 +295,50 @@ export async function compressGifManual(
 ): Promise<GifCompressResult> {
     const onProgress = callbacks?.onProgress;
 
-    onProgress?.(2, 'Decoding GIFâ€¦');
+    onProgress?.(2, 'Decoding GIF...');
     const decoded =
         callbacks?.preDecoded ??
-        (await decodeGifFile(file, (p) => onProgress?.(p * 0.25, 'Decoding framesâ€¦')));
+        (await decodeGifFile(file, (p) => onProgress?.(p * 0.25, 'Decoding frames...')));
 
-    let scale = Math.min(1, Math.max(0.05, options.scale ?? 1));
-    if (options.targetWidth && options.targetWidth > 0) {
-        scale = Math.min(1, Math.max(0.05, options.targetWidth / decoded.width));
-    }
+    // DIMENSIONS ARE NEVER CHANGED - only lossy color rounding is applied.
+    onProgress?.(28, 'Preparing frames...');
+    const kept = decoded.frames;
 
-    onProgress?.(28, 'Scaling framesâ€¦');
-    const scaled = scaleFrames(decoded.frames, decoded.width, decoded.height, scale);
-
-    // NOTE: frames are never dropped - the animation must stay identical
-    // to the original. Only colors / resolution / lossy rounding are used.
-    const kept = scaled.frames;
-
-    onProgress?.(32, 'Encoding GIFâ€¦');
+    onProgress?.(32, 'Encoding GIF...');
     const bytes = await encodeFrames(
         kept,
-        scaled.width,
-        scaled.height,
+        decoded.width,
+        decoded.height,
         decoded.hasTransparency,
         {
             colors: 256,
             lossy: options.lossy ?? 0,
-            onProgress: (p) => onProgress?.(32 + p * 0.66, 'Encoding framesâ€¦'),
+            onProgress: (p) => onProgress?.(32 + p * 0.66, 'Encoding frames...'),
         }
     );
-
-    const usedColors = 256;
 
     onProgress?.(100, 'Done');
     return {
         file: makeResultFile(file, bytes),
         bytes: bytes.length,
         sourceBytes: file.size,
-        width: scaled.width,
-        height: scaled.height,
+        width: decoded.width,
+        height: decoded.height,
         framesKept: kept.length,
         framesTotal: decoded.frameCountTotal,
-        passes: [{ colors: usedColors, scale, frameInterval: 1, bytes: bytes.length }],
+        passes: [{ colors: 256, scale: 1, frameInterval: 1, bytes: bytes.length }],
         targetMet: true,
-        lossless: false,
+        lossless: (options.lossy ?? 0) === 0,
     };
 }
 
 /* ------------------------------------------------------------------ */
-/* Target-size compressor (quality-first, adaptive)                    */
+/* Target-size compressor (resolution-preserving, adaptive lossy)      */
 /* ------------------------------------------------------------------ */
 
 interface PassConfig {
     colors: number;
-    /** keep 1 of every `interval` (in median-delay multiples) */
+    /** kept for reporting - always 1 (resolution never changes) */
     interval: number;
     scale: number;
     /** 0 = lossless color rounding */
@@ -414,39 +351,34 @@ interface PassOutcome {
     data: Uint8Array;
 }
 
-/** Perceived-quality score â€” resolution dominates, then colors. */
+/** Perceived-quality score - resolution is fixed, so less lossy wins. */
 function qualityScore(c: PassConfig): number {
-    const colorScore = c.colors / 256;
     const losslessBonus = c.lossy === 0 ? 0.05 : 0;
-    return 2.2 * c.scale + 0.6 * colorScore + losslessBonus;
+    return 1 - c.lossy / 250 + (c.colors / 256) * 0.1 + losslessBonus;
 }
-
-
-const FLOOR_SCALE = 0.04;
-
-function clampScale(s: number): number {
-    return Math.min(1, Math.max(FLOOR_SCALE, s));
-}
-
 
 export type GifStrength = 'light' | 'balanced' | 'strong' | 'extreme';
 
-/** Quality floors per strength - the target compressor never degrades below these. */
-const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number }> = {
-    light: { minScale: 0.9, maxLossy: 0 },
-    balanced: { minScale: 0.5, maxLossy: 25 },
-    strong: { minScale: 0.2, maxLossy: 80 },
-    extreme: { minScale: FLOOR_SCALE, maxLossy: 160 },
-};export async function compressGifToSize(
+/**
+ * Maximum lossy rounding per strength. Resolution is never a lever, so the
+ * lossy budgets are generous enough to reach aggressive targets.
+ */
+const STRENGTH_BOUNDS: Record<GifStrength, { maxLossy: number }> = {
+    light: { maxLossy: 0 },
+    balanced: { maxLossy: 40 },
+    strong: { maxLossy: 110 },
+    extreme: { maxLossy: 200 },
+};
+
+export async function compressGifToSize(
     file: File,
     targetBytes: number,
     callbacks?: { onProgress?: GifProgressFn; preDecoded?: DecodedGif; strength?: GifStrength }
 ): Promise<GifCompressResult> {
     const onProgress = callbacks?.onProgress;
     const bounds = STRENGTH_BOUNDS[callbacks?.strength ?? 'balanced'];
-    const clampScaleB = (s: number): number => Math.min(1, Math.max(bounds.minScale, s));
 
-    // Already fits â€” return untouched.
+    // Already fits - return untouched.
     if (file.size <= targetBytes) {
         return {
             file,
@@ -462,61 +394,39 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
         };
     }
 
-    onProgress?.(2, 'Decoding GIFâ€¦');
+    onProgress?.(2, 'Decoding GIF...');
     const decoded =
         callbacks?.preDecoded ??
-        (await decodeGifFile(file, (p) => onProgress?.(2 + p * 0.08, 'Decoding framesâ€¦')));
-
-
-    // Cache scaled frame sets (bounded to 2 entries).
-    const scaleCache: { scale: number; frames: GifFrameData[]; width: number; height: number }[] =
-        [];
-    const getScaled = (scale: number) => {
-        const hit = scaleCache.find((c) => Math.abs(c.scale - scale) < 1e-6);
-        if (hit) return hit;
-        const s = scaleFrames(decoded.frames, decoded.width, decoded.height, scale);
-        scaleCache.push({ scale, frames: s.frames, width: s.width, height: s.height });
-        while (scaleCache.length > 2) scaleCache.shift();
-        return scaleCache[scaleCache.length - 1];
-    };
+        (await decodeGifFile(file, (p) => onProgress?.(2 + p * 0.08, 'Decoding frames...')));
 
     const passes: GifPassInfo[] = [];
     // Best pass that fits the target (max quality score wins).
     const bestFitRef: { current: PassOutcome | null } = { current: null };
     // Smallest pass overall (fallback if the target can't be met).
     const smallestRef: { current: PassOutcome | null } = { current: null };
-    // Most recent outcome (input for the scale estimator).
-    const lastRef: { current: PassOutcome | null } = { current: null };
 
-    // Getters â€” reading through a function boundary avoids bogus CFA
-    // narrowing to `never` (TS cannot see the async mutations above).
     const bestFit = (): PassOutcome | null => bestFitRef.current;
     const smallest = (): PassOutcome | null => smallestRef.current;
-    const lastOutcome = (): PassOutcome => lastRef.current as PassOutcome;
+
     const runPass = async (cfg: PassConfig, progress: number): Promise<PassOutcome> => {
-        const scaled = getScaled(cfg.scale);
-        // FRAME PRESERVATION: every frame is always encoded, with its exact
-        // original delay. interval is kept in cfg for reporting only.
+        // Resolution is ALWAYS the original - frames pass through untouched.
         const bytes = await encodeFrames(
-            scaled.frames,
-            scaled.width,
-            scaled.height,
+            decoded.frames,
+            decoded.width,
+            decoded.height,
             decoded.hasTransparency,
             {
                 colors: cfg.colors,
                 lossy: cfg.lossy,
                 onProgress: (p) =>
-                    onProgress?.(
-                        Math.min(97, progress + (p / 100) * 4),
-                        `Compressing GIF`
-                    ),
+                    onProgress?.(Math.min(97, progress + (p / 100) * 4), 'Compressing GIF'),
             }
         );
 
         const outcome: PassOutcome = { cfg, bytes: bytes.length, data: bytes };
         passes.push({
             colors: cfg.colors,
-            scale: cfg.scale,
+            scale: 1,
             frameInterval: cfg.interval,
             bytes: bytes.length,
         });
@@ -530,13 +440,12 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
                 bestFitRef.current = outcome;
             }
         }
-        lastRef.current = outcome;
         return outcome;
     };
 
     /* ---- Phase 0: lossless re-encode ------------------------------ */
-    // Global palette + LZW only. Bloated GIFs often shrink 30â€“60% here
-    // with ZERO quality loss (all frames, full colors, full resolution).
+    // Palette + LZW only. Bloated GIFs often shrink 30-60% here with ZERO
+    // quality loss (all frames, full colors, full resolution).
     const p0 = await runPass({ colors: 256, interval: 1, scale: 1, lossy: 0 }, 12);
     if (p0.bytes <= targetBytes) {
         return finish(
@@ -550,17 +459,18 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
         );
     }
 
-    /* ---- Phase 1: color ladder (frames untouched) ------------------- */
-    // Color reduction down to ~96 colors is essentially invisible on
-    // real-world content.
-    const colorLadder = [256]; // colors are NEVER reduced
-    for (let i = 0; i < colorLadder.length; i++) {
-        const out = await runPass(
-            { colors: 256, interval: 1, scale: 1, lossy: 0 },
-            20 + i * 3
-        );
+    /* ---- Phase 1: adaptive lossy ladder ---------------------------- */
+    // Coarser color rounding shrinks LZW output. Climb the ladder until the
+    // target is met - width/height NEVER change.
+    const lossyLadder = [10, 20, 35, 50, 70, 90, 110, 130, 150, 175, 200];
+    for (let i = 0; i < lossyLadder.length; i++) {
+        const lossy = Math.min(bounds.maxLossy, lossyLadder[i]);
+        const cfg: PassConfig = { colors: 256, interval: 1, scale: 1, lossy };
+        const out = await runPass(cfg, 30 + i * 4);
         if (out.bytes <= targetBytes) break;
+        if (lossy >= bounds.maxLossy) break; // strength limit reached
     }
+
     {
         const fit = bestFit();
         if (fit) {
@@ -576,40 +486,22 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
         }
     }
 
-    /* ---- Phase 3: adaptive resolution ------------------------------ */
-    // Estimate the scale that hits the target from real measurements
-    // (GIF bytes scale ~linearly with pixels â†’ scale âˆ âˆšratio), then refine.
-    for (let k = 0; k < 10; k++) {
-        const last = lastOutcome();
-        const ratio = Math.max(0.004, targetBytes / last.bytes);
-        const margin = last.bytes > targetBytes ? 0.82 : 1.05; // undershoot when too big
-        const scale = clampScaleB(Math.max(bounds.minScale, clampScale(last.cfg.scale * Math.sqrt(ratio) * margin)));
-        const cfg: PassConfig = {
-            colors: 256,
-            interval: 1,
-            scale,
-            lossy: k >= 5 ? bounds.maxLossy : 0,
-        };
-        const out = await runPass(cfg, 58 + k * 2);
-        if (out.bytes <= targetBytes) break;
-    }
-
-    /* ---- Phase 3b: budget utilization ------------------------------ */
-    // If we are well under the target we "wasted" quality â€” claw it back by
-    // increasing resolution / colors while still fitting the target.
+    /* ---- Phase 2: budget utilization ------------------------------- */
+    // If we are well under the target we "wasted" quality - claw it back
+    // by easing off the lossy rounding while still fitting the target.
     const clawBack = async (): Promise<void> => {
-        for (let k = 0; k < 5; k++) {
+        for (let k = 0; k < 4; k++) {
             const fit = bestFit();
-            if (!fit || fit.bytes > targetBytes * 0.8) return;
+            if (!fit || fit.bytes > targetBytes * 0.8 || fit.cfg.lossy <= 0) return;
             const cfg: PassConfig = {
                 colors: 256,
                 interval: 1,
-                scale: clampScaleB(fit.cfg.scale * 1.2),
-                lossy: 0,
+                scale: 1,
+                lossy: Math.max(0, Math.round(fit.cfg.lossy * 0.6)),
             };
-            if (cfg.scale <= fit.cfg.scale * 1.01 && cfg.colors === fit.cfg.colors) return;
-            const out = await runPass(cfg, 76 + k * 2);
-            if (out.bytes > targetBytes) return; // too greedy â€” keep what we have
+            if (cfg.lossy >= fit.cfg.lossy) return;
+            const out = await runPass(cfg, 78 + k * 2);
+            if (out.bytes > targetBytes) return; // too greedy - keep what we have
         }
     };
     await clawBack();
@@ -629,15 +521,13 @@ const STRENGTH_BOUNDS: Record<GifStrength, { minScale: number; maxLossy: number 
         }
     }
 
-    /* ---- Phase 4: last resort -------------------------------------- */
-    // Extreme targets only: aggressive thinning + lossy rounding + scale.
-    const floorSteps: PassConfig[] = [
-        { colors: 256, interval: 1, scale: clampScaleB((smallest()?.cfg.scale ?? 1) * 0.7), lossy: Math.min(bounds.maxLossy, 30) },
-        { colors: 256, interval: 1, scale: bounds.minScale, lossy: bounds.maxLossy },
-    ];
-    for (let i = 0; i < floorSteps.length; i++) {
-        const out = await runPass(floorSteps[i], 88 + i * 3);
-        if (out.bytes <= targetBytes) break;
+    /* ---- Phase 3: last resort -------------------------------------- */
+    // Extreme targets only: the strength's maximum lossy rounding.
+    if (bounds.maxLossy > 0) {
+        await runPass(
+            { colors: 256, interval: 1, scale: 1, lossy: bounds.maxLossy },
+            90
+        );
     }
     await clawBack();
 
@@ -665,14 +555,14 @@ function finish(
 ): GifCompressResult {
     onProgress?.(100, 'Done');
     const cfg = outcome.cfg;
-    const isLossless =
-        lossless || (cfg.scale >= 0.995 && cfg.interval <= 1 && cfg.colors >= 256 && cfg.lossy === 0);
+    const isLossless = lossless || (cfg.lossy === 0 && cfg.colors >= 256);
     return {
         file: makeResultFile(file, outcome.data),
         bytes: outcome.bytes,
         sourceBytes: file.size,
-        width: Math.max(1, Math.round(decoded.width * cfg.scale)),
-        height: Math.max(1, Math.round(decoded.height * cfg.scale)),
+        // Dimensions are always the ORIGINAL - resolution never changes.
+        width: decoded.width,
+        height: decoded.height,
         framesKept: decoded.frames.length,
         framesTotal: decoded.frameCountTotal,
         passes,

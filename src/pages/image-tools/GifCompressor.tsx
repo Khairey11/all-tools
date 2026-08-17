@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { useDropzone } from 'react-dropzone';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Film, UploadCloud, Download, Sparkles, Target, Zap } from 'lucide-react';
+import { ArrowLeft, Film, UploadCloud, Download, Sparkles, Target, Zap, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatFileSize, downloadFile } from '../../utils/format';
 import {
@@ -46,13 +46,12 @@ export const GifCompressor = () => {
 
  const [jobs, setJobs] = useState<GifJob[]>([]);
  const [mode, setMode] = useState<Mode>('target');
- const [targetBytes, setTargetBytes] = useState(1024 * 1024);
- const [manualScale, setManualScale] = useState(1);
- const [manualLossy, setManualLossy] = useState(0);
- const [strength, setStrength] = useState<GifStrength>('balanced');
+  const [targetBytes, setTargetBytes] = useState(1024 * 1024);
+  const [manualLossy, setManualLossy] = useState(0);
+  const [strength, setStrength] = useState<GifStrength>('balanced');
 
- const settingsRef = useRef({ mode, targetBytes, manualScale, manualLossy, strength });
- settingsRef.current = { mode, targetBytes, manualScale, manualLossy, strength };
+  const settingsRef = useRef({ mode, targetBytes, manualLossy, strength });
+  settingsRef.current = { mode, targetBytes, manualLossy, strength };
 
  const supportedRef = useRef<boolean>();
  if (supportedRef.current === undefined) {
@@ -180,15 +179,14 @@ export const GifCompressor = () => {
          onProgress,
          strength: s.strength,
         })
-      : await compressGifManual(
-         job.original,
-         {
-          colors: 256,
-          lossy: s.manualLossy,
-          scale: s.manualScale,
-         },
-         { preDecoded: decoded, onProgress }
-        );
+       : await compressGifManual(
+          job.original,
+          {
+           colors: 256,
+           lossy: s.manualLossy,
+          },
+          { preDecoded: decoded, onProgress }
+         );
     if (!mountedRef.current) break;
 
     if (s.mode === 'target' && !result.targetMet) {
@@ -230,7 +228,7 @@ export const GifCompressor = () => {
    }
   }, 400);
   return () => clearTimeout(t);
- }, [mode, targetBytes, manualScale, manualLossy, strength]);
+  }, [mode, targetBytes, manualLossy, strength]);
 
  const markAutoRerun = () => {
   autoRerunRef.current = true;
@@ -419,33 +417,18 @@ export const GifCompressor = () => {
       )}
 
       {mode === 'manual' && (
-       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="space-y-2">
-         <div className="flex justify-between text-sm">
-          <span className="text-text-muted">Resolution</span>
-          <span className="text-text font-mono text-xs bg-white/5 px-2 py-1 rounded">
-           {Math.round(manualScale * 100)}%
-          </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+         <div className="space-y-2 rounded-2xl border border-secondary bg-white/40 p-4 flex items-center gap-3">
+          <Lock className="w-5 h-5 text-primary shrink-0" />
+          <div>
+           <p className="text-sm font-bold text-text">Dimensions always preserved</p>
+           <p className="text-xs text-text-muted">
+            Width & height are never reduced - compression uses color optimization only.
+           </p>
+          </div>
          </div>
-         <input
-          type="range"
-          min={0.25}
-          max={1}
-          step={0.05}
-          value={manualScale}
-          onChange={(e) => {
-           markAutoRerun();
-           setManualScale(Number(e.target.value));
-          }}
-          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
-         />
-         <div className="flex justify-between text-xs text-text-muted/40">
-          <span>25%</span>
-          <span>100%</span>
-         </div>
-        </div>
 
-        <div className="space-y-2">
+         <div className="space-y-2">
          <div className="flex justify-between text-sm">
           <span className="text-text-muted">Dithering level</span>
           <span className="text-text font-mono text-xs bg-white/5 px-2 py-1 rounded">
